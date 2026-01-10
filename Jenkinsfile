@@ -127,7 +127,7 @@ pipeline {
             steps {
                 script {
                     echo ">>> Yeni container başlatılıyor..."
-                    sh """
+                    sh '''
                         docker run -d \
                         --name ${CONTAINER_NAME} \
                         --network ${NETWORK_NAME} \
@@ -135,7 +135,7 @@ pipeline {
                         -p ${APP_PORT}:3004 \
                         $([ -f ${ENV_FILE} ] && echo "--env-file ${ENV_FILE}") \
                         ${DOCKER_IMAGE}:${BRANCH_NAME}
-                    """
+                    '''
                     echo "✅ Container başlatıldı: ${CONTAINER_NAME}"
                 }
             }
