@@ -1,19 +1,45 @@
 pipeline {
     agent any
     
+    // Jenkins konfigürasyonu
+    options {
+        timeout(time: 1, unit: 'HOURS')
+        timestamps()
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+    }
+    
     environment {
         // Proje Ayarları
         APP_NAME = 'create-md-instructions-bot'
         DOCKER_IMAGE = "${APP_NAME}"
+        GITHUB_REPO = 'https://github.com/AFET-TEAM/Create-Md-Instructions-Bot-.git'
         // Network
         NETWORK_NAME = 'app-network'
     }
     
     stages {
+        stage('SCM Checkout') {
+            steps {
+                script {
+                    echo ">>> Git repository checkout ediliyor..."
+                    checkout([
+                        $class: 'GitSCM',
+                        branches: [[name: env.GIT_BRANCH ?: '*/main']],
+                        userRemoteConfigs: [[url: env.GITHUB_REPO]]
+                    ])
+                    echo "✅ Repository başarıyla checkout edildi"
+                    echo "Branch: ${env.GIT_BRANCH ?: 'main'}"
+                }
+            }
+        }
+        
         stage('Ortam ve Port Analizi') {
             steps {
                 script {
-                    if (env.BRANCH_NAME == 'main' || env.BRANCH_NAME == 'master') {
+                    // BRANCH_NAME'i GIT_BRANCH'ten çıkar
+                    def branchName = env.GIT_BRANCH?.replace('origin/', '') ?: 'main'
+                    
+                    if (branchName == 'main' || branchName == 'master') {
                         // --- PROD ---
                         env.CONTAINER_NAME = "${APP_NAME}-prod"
                         env.APP_PORT = "3004"
@@ -22,7 +48,7 @@ pipeline {
                         echo "Container: ${env.CONTAINER_NAME}"
                         echo "Port: ${env.APP_PORT}"
                     }
-                    else if (env.BRANCH_NAME == 'develop') {
+                    else if (branchName == 'develop') {
                         // --- DEV ---
                         env.CONTAINER_NAME = "${APP_NAME}-dev"
                         env.APP_PORT = "3005"
@@ -33,7 +59,7 @@ pipeline {
                     }
                     else {
                         // --- TEST ---
-                        env.CONTAINER_NAME = "${APP_NAME}-test-${env.BRANCH_NAME}"
+                        env.CONTAINER_NAME = "${APP_NAME}-test-${branchName}"
                         env.APP_PORT = "3006"
                         env.ENV_FILE = "/var/jenkins_home/create-md-instructions-bot-test.env"
                         echo "✅ TEST ORTAMI Hazırlanıyor..."
@@ -58,16 +84,6 @@ pipeline {
             }
         }
 
-        stage('Checkout') {
-            steps {
-                script {
-                    echo ">>> Repository kontrol ediliyor..."
-                    // Declarative checkout'tan sonra zaten checkout yapılmış
-                    echo "✅ Branch: ${env.BRANCH_NAME}"
-                    echo "✅ Commit: ${env.GIT_COMMIT?.take(7) ?: 'N/A'}"
-                }
-            }
-        }
 
         stage('Build Docker Image') {
             steps {
