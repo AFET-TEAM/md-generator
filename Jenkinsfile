@@ -6,7 +6,7 @@ pipeline {
         NETWORK_NAME = "app-network"
         CONTAINER_NAME = "md-generator-prod"
         HOST_PORT = "5000"
-        CONTAINER_PORT = "5001"
+        CONTAINER_PORT = "5000"
     }
 
     stages {
