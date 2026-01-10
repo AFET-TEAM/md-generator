@@ -42,7 +42,7 @@ pipeline {
                         if [ -f /var/jenkins_home/create-md-instructions-bot.env ]; then
                             echo "✅ Env dosyası yükleniyor..."
                             set -a
-                            source /var/jenkins_home/create-md-instructions-bot.env
+                            . /var/jenkins_home/create-md-instructions-bot.env
                             set +a
                         else
                             echo "⚠️  Env dosyası bulunamadı, varsayılan değerler kullanılıyor..."
@@ -61,7 +61,7 @@ pipeline {
                         if [ -f /var/jenkins_home/create-md-instructions-bot.env ]; then
                             echo "✅ Env dosyası yükleniyor..."
                             set -a
-                            source /var/jenkins_home/create-md-instructions-bot.env
+                            . /var/jenkins_home/create-md-instructions-bot.env
                             set +a
                         else
                             echo "⚠️  Env dosyası bulunamadı, varsayılan değerler kullanılıyor..."
