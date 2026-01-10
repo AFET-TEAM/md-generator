@@ -26,7 +26,7 @@ pipeline {
                     echo "🔄 Repository klonlanıyor..."
                     deleteDir()
                     sh '''
-                        git clone --depth=1 https://github.com/AFET-TEAM/Create-Md-Instructions-Bot-.git . || {
+                        git clone --depth=1 https://github.com/AFET-TEAM/md-generator.git . || {
                             echo "❌ Git clone başarısız"
                             exit 1
                         }
@@ -101,9 +101,9 @@ pipeline {
                 script {
                     echo "🛑 Eski container durduruluyor..."
                     sh '''
-                        if docker ps -a --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
-                            docker stop ${CONTAINER_NAME} 2>/dev/null || true
-                            docker rm ${CONTAINER_NAME} 2>/dev/null || true
+                        if docker ps -a --format '{{.Names}}' | grep -q "^\\${CONTAINER_NAME}$"; then
+                            docker stop \\${CONTAINER_NAME} 2>/dev/null || true
+                            docker rm \\${CONTAINER_NAME} 2>/dev/null || true
                             echo "✅ Eski container kaldırıldı"
                         else
                             echo "ℹ️ Eski container bulunamadı"
@@ -118,8 +118,8 @@ pipeline {
                 script {
                     echo "🌐 Docker network kontrol ediliyor..."
                     sh '''
-                        if ! docker network ls --format '{{.Name}}' | grep -q "^${NETWORK_NAME}$"; then
-                            docker network create ${NETWORK_NAME}
+                        if ! docker network ls --format '{{.Name}}' | grep -q "^\\${NETWORK_NAME}$"; then
+                            docker network create \\${NETWORK_NAME}
                             echo "✅ Network oluşturuldu"
                         else
                             echo "✅ Network zaten mevcut"
@@ -136,12 +136,12 @@ pipeline {
                     sh '''
                         set -e
                         docker run -d \
-                            --name ${CONTAINER_NAME} \
-                            --network ${NETWORK_NAME} \
-                            -p ${APP_PORT}:${CONTAINER_PORT} \
-                            ${DOCKER_IMAGE}:latest
+                            --name \\${CONTAINER_NAME} \
+                            --network \\${NETWORK_NAME} \
+                            -p \\${APP_PORT}:\\${CONTAINER_PORT} \
+                            \\${DOCKER_IMAGE}:latest
                         echo "✅ Container başarıyla başlatıldı"
-                        echo "🔗 URL: http://localhost:${APP_PORT}"
+                        echo "🔗 URL: http://localhost:\\${APP_PORT}"
                         sleep 5
                     '''
                 }
@@ -154,8 +154,8 @@ pipeline {
                     echo "💚 Health check yapılıyor..."
                     sh '''
                         for i in {1..30}; do
-                            echo "Deneme $i/30..."
-                            if curl -f http://localhost:${APP_PORT} > /dev/null 2>&1; then
+                            echo "Deneme \\$i/30..."
+                            if curl -f http://localhost:\\${APP_PORT} > /dev/null 2>&1; then
                                 echo "✅ Application sağlıklı, yanıt veriyor"
                                 exit 0
                             fi
@@ -194,7 +194,7 @@ pipeline {
                 """
                 sh '''
                     echo "Container logs:"
-                    docker logs ${CONTAINER_NAME} 2>/dev/null || echo "Container not found"
+                    docker logs \\${CONTAINER_NAME} 2>/dev/null || echo "Container not found"
                 '''
             }
         }
