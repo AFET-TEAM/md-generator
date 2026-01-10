@@ -56,7 +56,7 @@ pipeline {
                     sh '''
                         CONTAINER_NAME="md-generator-prod"
                         for i in {1..15}; do
-                            if docker exec ${CONTAINER_NAME} curl -f http://localhost:5001 > /dev/null 2>&1; then
+                            if docker exec ${CONTAINER_NAME} curl -f http://localhost:5000 > /dev/null 2>&1; then
                                 echo "✅ Application çalışıyor"
                                 exit 0
                             fi
