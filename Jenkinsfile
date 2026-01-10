@@ -53,9 +53,10 @@ pipeline {
             steps {
                 script {
                     echo "💚 Health check başlatılıyor..."
-                    sh """
+                    sh '''
+                        CONTAINER_NAME="md-generator-prod"
                         for i in {1..15}; do
-                            if curl -f http://localhost:${HOST_PORT} > /dev/null 2>&1; then
+                            if docker exec ${CONTAINER_NAME} curl -f http://localhost:5001 > /dev/null 2>&1; then
                                 echo "✅ Application çalışıyor"
                                 exit 0
                             fi
@@ -64,7 +65,7 @@ pipeline {
                         done
                         echo "❌ Application çalışmıyor"
                         exit 1
-                    """
+                    '''
                 }
             }
         }
