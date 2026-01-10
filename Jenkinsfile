@@ -24,15 +24,19 @@ pipeline {
             steps {
                 script {
                     echo "🔄 Repository klonlanıyor..."
-                    deleteDir() // Workspace temizleniyor
-
-                    // Jenkins credentials ID'si
-                    def gitCredsId = 'GITHUB_CREDENTIALS_ID' // Jenkins'te tanımlı credentials ID
-
-                    withCredentials([usernamePassword(credentialsId: gitCredsId, passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
-                        sh """
-                            git clone --depth=1 https://\$GIT_USERNAME:\$GIT_PASSWORD@github.com/AFET-TEAM/Create-Md-Instructions-Bot.git repo || {
-                                echo "❌ Git clone başarısız"
+                    deleteDir()
+                    sh '''
+                        git clone --depth=1 https://github.com/AFET-TEAM/Create-Md-Instructions-Bot-.git . || {
+                            echo "❌ Git clone başarısız"
+                            exit 1
+                        }
+                        git config user.email "jenkins@example.com"
+                        git config user.name "Jenkins CI"
+                    '''
+                    echo "✅ Repository başarıyla klonlandı"
+                }
+            }
+        }
                                 exit 1
                             }
                             cd repo
