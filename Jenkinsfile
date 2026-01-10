@@ -11,6 +11,26 @@ pipeline {
 
     stages {
 
+        stage('Prepare Environment') {
+            steps {
+                script {
+                    echo "🔧 Ortam hazırlanıyor..."
+                    sh '''
+                        # Network'ü oluştur (zaten varsa hata vermez)
+                        docker network create app-network 2>/dev/null || true
+                        
+                        # Eski container'ı temizle
+                        docker rm -f md-generator-prod 2>/dev/null || true
+                        
+                        # Bekleme süresi
+                        sleep 2
+                        
+                        echo "✅ Ortam hazır"
+                    '''
+                }
+            }
+        }
+
         stage('Build Docker Image') {
             steps {
                 script {
@@ -28,23 +48,48 @@ pipeline {
                 script {
                     echo "🚀 Container deploy ediliyor: ${CONTAINER_NAME}"
 
-                 
-                    sh """
-                        docker stop ${CONTAINER_NAME} 2>/dev/null || true
-                        docker rm ${CONTAINER_NAME} 2>/dev/null || true
-                    """
-
-           
-                    sh """
+                    sh '''
+                        # Final cleanup
+                        docker rm -f md-generator-prod 2>/dev/null || true
+                        sleep 1
+                        
+                        # Container'ı başlat
                         docker run -d \
-                            --name ${CONTAINER_NAME} \
-                            --network ${NETWORK_NAME} \
+                            --name md-generator-prod \
+                            --network app-network \
                             --restart always \
-                            -p ${HOST_PORT}:${CONTAINER_PORT} \
-                            ${BASE_APP_NAME}:mainn
-                    """
+                            -p 5000:5000 \
+                            md-generator:mainn
+                        
+                        # Başlatılmasını bekle
+                        sleep 3
+                        
+                        echo "✅ Başarıyla deploy edildi"
+                    '''
+                }
+            }
+        }
 
-                    echo "✅ Başarıyla deploy edildi: ${CONTAINER_NAME} | Port: ${HOST_PORT}"
+        stage('Health Check') {
+            steps {
+                script {
+                    echo "💚 Health check başlatılıyor..."
+                    sh '''
+                        CONTAINER_NAME="md-generator-prod"
+                        i=0
+                        while [ $i -lt 15 ]; do
+                            i=$((i + 1))
+                            if docker exec ${CONTAINER_NAME} curl -f http://localhost:5000 > /dev/null 2>&1; then
+                                echo "✅ Application çalışıyor"
+                                exit 0
+                            fi
+                            echo "⏳ Deneme $i/15..."
+                            sleep 2
+                        done
+                        echo "❌ Application çalışmıyor"
+                        docker logs ${CONTAINER_NAME} || true
+                        exit 1
+                    '''
                 }
             }
         }
