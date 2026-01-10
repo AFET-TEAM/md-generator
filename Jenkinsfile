@@ -22,9 +22,16 @@ pipeline {
             steps {
                 script {
                     echo ">>> Git repository checkout ediliyor..."
-                    // Jenkins SCM konfigürasyonundan checkout yap
-                    checkout scm
+                    // Workspace'i temizle ve yeniden checkout yap
+                    deleteDir()
+                    checkout([
+                        $class: 'GitSCM',
+                        branches: [[name: '*/main'], [name: '*/develop'], [name: '**']],
+                        userRemoteConfigs: [[url: '${GITHUB_REPO}']]
+                    ])
                     echo "✅ Repository başarıyla checkout edildi"
+                    sh 'git config user.email "jenkins@example.com" || true'
+                    sh 'git config user.name "Jenkins" || true'
                 }
             }
         }
