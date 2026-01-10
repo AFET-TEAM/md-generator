@@ -1,11 +1,14 @@
 pipeline {
     agent any
-    
-    // Jenkins konfigürasyonu
+      environment {
+        APP_NAME_API = " create-md-instructions-bot"
+        NETWORK_NAME = "app-network"
+    }
     options {
         timeout(time: 1, unit: 'HOURS')
         timestamps()
         buildDiscarder(logRotator(numToKeepStr: '10'))
+        disableConcurrentBuilds()
     }
     
     environment {
@@ -13,195 +16,181 @@ pipeline {
         APP_NAME = 'create-md-instructions-bot'
         DOCKER_IMAGE = "${APP_NAME}"
         GITHUB_REPO = 'https://github.com/AFET-TEAM/Create-Md-Instructions-Bot-.git'
-        // Network
         NETWORK_NAME = 'app-network'
+   
+        CONTAINER_NAME = 'create-md-instructions-bot-default'
+        APP_PORT = '3004'
+        CONTAINER_PORT = '3004'
+        ENV_FILE = '/var/jenkins_home/create-md-instructions-bot.env'
     }
     
     stages {
-        stage('SCM Checkout') {
+        stage('Clone Repository') {
             steps {
                 script {
-                    echo ">>> Git repository checkout ediliyor..."
-                    // Workspace'i temizle ve yeniden checkout yap
+                    echo "🔄 Repository klonlanıyor..."
                     deleteDir()
-                    checkout([
-                        $class: 'GitSCM',
-                        branches: [[name: '*/main'], [name: '*/develop'], [name: '**']],
-                        userRemoteConfigs: [[url: '${GITHUB_REPO}']]
-                    ])
-                    echo "✅ Repository başarıyla checkout edildi"
-                    sh 'git config user.email "jenkins@example.com" || true'
-                    sh 'git config user.name "Jenkins" || true'
+                    sh '''
+                        git clone --depth=1 ${GITHUB_REPO} . || {
+                            echo "❌ Git clone başarısız"
+                            exit 1
+                        }
+                        git config user.email "jenkins@example.com"
+                        git config user.name "Jenkins CI"
+                    '''
+                    echo "✅ Repository başarıyla klonlandı"
                 }
             }
         }
         
-        stage('Ortam ve Port Analizi') {
+        stage('Detect Environment') {
             steps {
                 script {
-                    // BRANCH_NAME'i GIT_BRANCH'ten çıkar
-                    def branchName = env.GIT_BRANCH?.replace('origin/', '') ?: 'main'
+                    echo "🔍 Ortam tespit ediliyor..."
+                    def branchName = sh(returnStdout: true, script: 'git rev-parse --abbrev-ref HEAD').trim()
+                    echo "📌 Branch: ${branchName}"
                     
                     if (branchName == 'main' || branchName == 'master') {
-                        // --- PROD ---
                         env.CONTAINER_NAME = "${APP_NAME}-prod"
                         env.APP_PORT = "3004"
                         env.ENV_FILE = "/var/jenkins_home/create-md-instructions-bot.env"
-                        echo "✅ CANLI ORTAM (PROD) Hazırlanıyor..."
-                        echo "Container: ${env.CONTAINER_NAME}"
-                        echo "Port: ${env.APP_PORT}"
+                        echo "✅ PROD Ortamı Seçildi (Port: 3004)"
                     }
                     else if (branchName == 'develop') {
-                        // --- DEV ---
                         env.CONTAINER_NAME = "${APP_NAME}-dev"
-                        env.APP_PORT = "3005"
+                        env.APP_PORT = "3004"
                         env.ENV_FILE = "/var/jenkins_home/create-md-instructions-bot-dev.env"
-                        echo "✅ GELİŞTİRME ORTAMI (DEV) Hazırlanıyor..."
-                        echo "Container: ${env.CONTAINER_NAME}"
-                        echo "Port: ${env.APP_PORT}"
+                        echo "✅ DEV Ortamı Seçildi (Port: 3004)"
                     }
                     else {
-                        // --- TEST ---
-                        env.CONTAINER_NAME = "${APP_NAME}-test-${branchName}"
-                        env.APP_PORT = "3006"
+                        env.CONTAINER_NAME = "${APP_NAME}-test"
+                        env.APP_PORT = "3004"
                         env.ENV_FILE = "/var/jenkins_home/create-md-instructions-bot-test.env"
-                        echo "✅ TEST ORTAMI Hazırlanıyor..."
-                        echo "Container: ${env.CONTAINER_NAME}"
-                        echo "Port: ${env.APP_PORT}"
+                        echo "✅ TEST Ortamı Seçildi (Port: 3004)"
                     }
                 }
             }
         }
-
-        stage('Load Environment') {
+        
+        stage('Load Environment Variables') {
             steps {
                 script {
-                    echo ">>> Environment dosyası yükleniyor..."
+                    echo "📂 Environment dosyası yükleniyor: ${env.ENV_FILE}"
                     if (fileExists(env.ENV_FILE)) {
-                        echo "✅ Environment dosyası bulundu: ${env.ENV_FILE}"
+                        echo "✅ Environment dosyası bulundu"
                     } else {
-                        echo "⚠️  Environment dosyası bulunamadı: ${env.ENV_FILE}"
-                        echo "Varsayılan değerler kullanılacak..."
+                        echo "⚠️  Environment dosyası bulunamadı (varsayılan değerler kullanılacak)"
                     }
                 }
             }
         }
-
-
+        
         stage('Build Docker Image') {
             steps {
                 script {
-                    echo ">>> Docker image oluşturuluyor..."
+                    echo "🐳 Docker image oluşturuluyor..."
                     sh '''
-                        if [ -f ${ENV_FILE} ]; then
-                            set -a
-                            . ${ENV_FILE}
-                            set +a
+                        set -e
+                        
+                        # Environment dosyasını yükle
+                        if [ -f "${ENV_FILE}" ]; then
+                            echo "Loading environment from ${ENV_FILE}"
+                            export $(grep -v '^#' ${ENV_FILE} | xargs)
                         fi
+                        
+                        # Docker image oluştur
                         docker build \
                             --build-arg GEMINI_API_KEY="${GEMINI_API_KEY:-}" \
                             --build-arg ENVIRONMENT="${ENVIRONMENT:-development}" \
-                            -t ${DOCKER_IMAGE}:${BRANCH_NAME} \
-                            -t ${DOCKER_IMAGE}:latest \
-                            -t ${DOCKER_IMAGE}:${BUILD_NUMBER} .
+                            -t ${DOCKER_IMAGE}:${BUILD_NUMBER} \
+                            -t ${DOCKER_IMAGE}:latest .
+                        
+                        echo "✅ Docker image başarıyla oluşturuldu"
                     '''
-                    echo "✅ Docker image başarıyla oluşturuldu!"
                 }
             }
         }
-
-        stage('Prepare Network') {
-            steps {
-                script {
-                    echo ">>> Docker network kontrol ediliyor..."
-                    sh "docker network create ${NETWORK_NAME} || true"
-                    echo "✅ Network hazır: ${NETWORK_NAME}"
-                }
-            }
-        }
-
+        
         stage('Stop Old Container') {
             steps {
                 script {
-                    echo ">>> Eski container durduruluyor..."
+                    echo "🛑 Eski container durduruluyor..."
                     sh '''
-                        # İsimle durmaya çalış
-                        docker stop ${CONTAINER_NAME} 2>/dev/null || true
-                        docker rm ${CONTAINER_NAME} 2>/dev/null || true
-                        
-                        # Port kullanan tüm containers'ı durdur (güvenlik için)
-                        PORT_CONTAINERS=$(docker ps -q --filter "publish=${APP_PORT}" 2>/dev/null || echo "")
-                        if [ -n "$PORT_CONTAINERS" ]; then
-                            echo ">>> Port ${APP_PORT}'de çalışan containers durduruluyor..."
-                            docker stop $PORT_CONTAINERS || true
-                            docker rm $PORT_CONTAINERS || true
+                        if docker ps -a --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
+                            echo "Eski container durduruluyor: ${CONTAINER_NAME}"
+                            docker stop ${CONTAINER_NAME} 2>/dev/null || true
+                            docker rm ${CONTAINER_NAME} 2>/dev/null || true
+                            echo "✅ Eski container kaldırıldı"
+                        else
+                            echo "ℹ️  Eski container bulunamadı"
                         fi
                     '''
-                    echo "✅ Eski container temizlendi"
                 }
             }
         }
-
+        
+        stage('Create Network') {
+            steps {
+                script {
+                    echo "🌐 Docker network kontrol ediliyor..."
+                    sh '''
+                        if ! docker network ls --format '{{.Name}}' | grep -q "^${NETWORK_NAME}$"; then
+                            echo "Network oluşturuluyor: ${NETWORK_NAME}"
+                            docker network create ${NETWORK_NAME}
+                            echo "✅ Network oluşturuldu"
+                        else
+                            echo "✅ Network zaten mevcut"
+                        fi
+                    '''
+                }
+            }
+        }
+        
         stage('Run New Container') {
             steps {
                 script {
-                    echo ">>> Yeni container başlatılıyor..."
+                    echo "▶️  Yeni container başlatılıyor..."
                     sh '''
+                        set -e
+                        
+                        # Environment dosyasını yükle
+                        ENV_ARGS=""
+                        if [ -f "${ENV_FILE}" ]; then
+                            ENV_ARGS=$(grep -v '^#' ${ENV_FILE} | sed 's/^/-e /' | tr '\n' ' ')
+                        fi
+                        
+                        # Container'ı başlat
                         docker run -d \
-                        --name ${CONTAINER_NAME} \
-                        --network ${NETWORK_NAME} \
-                        --restart always \
-                        -p ${APP_PORT}:3004 \
-                        $([ -f ${ENV_FILE} ] && echo "--env-file ${ENV_FILE}") \
-                        ${DOCKER_IMAGE}:${BRANCH_NAME}
+                            --name ${CONTAINER_NAME} \
+                            --network ${NETWORK_NAME} \
+                            -p ${APP_PORT}:${CONTAINER_PORT} \
+                            ${ENV_ARGS} \
+                            ${DOCKER_IMAGE}:latest
+                        
+                        echo "✅ Container başarıyla başlatıldı"
+                        echo "🔗 URL: http://localhost:${APP_PORT}"
+                        
+                        # Başlatılmasını bekle
+                        sleep 5
                     '''
-                    echo "✅ Container başlatıldı: ${CONTAINER_NAME}"
                 }
             }
         }
-
-        stage('Verify Deployment') {
+        
+        stage('Health Check') {
             steps {
                 script {
-                    echo ">>> Deployment doğrulanıyor..."
+                    echo "💚 Health check yapılıyor..."
                     sh '''
-                        # Container'ın başlaması için bekleme
-                        sleep 15
-                        
-                        # Logs'ları kontrol et
-                        echo ">>> Container logs:"
-                        docker logs ${CONTAINER_NAME} | tail -20 || true
-                        
-                        # Container'ın IP adresini bul
-                        CONTAINER_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${CONTAINER_NAME})
-                        echo ">>> Container IP: $CONTAINER_IP"
-                        
-                        # Health check'i retry ile yap
-                        MAX_RETRIES=10
-                        RETRY=0
-                        while [ $RETRY -lt $MAX_RETRIES ]; do
-                            echo ">>> Health check attempt $(($RETRY + 1))/$MAX_RETRIES"
-                            
-                            # Container IP üzerinden dene
-                            if [ -n "$CONTAINER_IP" ] && curl -f -s --connect-timeout 2 http://${CONTAINER_IP}:3004/ > /dev/null 2>&1; then
-                                echo "✅ Deployment başarılı!"
+                        for i in {1..30}; do
+                            echo "Deneme $i/30..."
+                            if curl -f http://localhost:${APP_PORT} > /dev/null 2>&1; then
+                                echo "✅ Application sağlıklı, yanıt veriyor"
                                 exit 0
                             fi
-                            
-                            # localhost üzerinden dene
-                            if curl -f -s --connect-timeout 2 http://localhost:${APP_PORT}/ > /dev/null 2>&1; then
-                                echo "✅ Deployment başarılı!"
-                                exit 0
-                            fi
-                            
-                            RETRY=$((RETRY + 1))
-                            if [ $RETRY -lt $MAX_RETRIES ]; then
-                                sleep 3
-                            fi
+                            sleep 2
                         done
-                        
-                        echo "⚠️  Health check timeout, container kontrol ediliyor..."
-                        docker inspect ${CONTAINER_NAME} | grep -A 5 "State" || true
+                        echo "❌ Application yanıt vermiyor"
                         exit 1
                     '''
                 }
@@ -212,27 +201,39 @@ pipeline {
     post {
         success {
             script {
-                echo "✅ Pipeline başarıyla tamamlandı!"
-                echo "═══════════════════════════════════════"
-                echo "Ortam: ${BRANCH_NAME}"
-                echo "Container: ${CONTAINER_NAME}"
-                echo "Port: ${APP_PORT}"
-                echo "URL: http://localhost:${APP_PORT}"
-                echo "═══════════════════════════════════════"
+                echo """
+                ✅ PIPELINE BAŞARILI!
+                
+                📊 Deployment Detayları:
+                - Container: ${env.CONTAINER_NAME}
+                - Port: ${env.APP_PORT}
+                - Image: ${env.DOCKER_IMAGE}:latest
+                - URL: http://localhost:${env.APP_PORT}
+                """
             }
         }
+        
         failure {
             script {
-                echo "❌ Pipeline başarısız oldu!"
-                echo "Container logs:"
-                sh "docker logs ${CONTAINER_NAME} || true"
-                // Hata durumunda önceki container'ı geri başlat (varsa)
-                sh "docker start ${CONTAINER_NAME} || true"
+                echo """
+                ❌ PIPELINE BAŞARISIZ!
+                
+                🔍 Sorun Giderme:
+                1. Container logs kontrol et: docker logs ${CONTAINER_NAME}
+                2. Network kontrol: docker network ls
+                3. Image kontrol: docker images | grep ${DOCKER_IMAGE}
+                """
+                
+                sh '''
+                    echo "Container logs:"
+                    docker logs ${CONTAINER_NAME} 2>/dev/null || echo "Container not found"
+                '''
             }
         }
+        
         always {
             script {
-                echo "Pipeline execution completed"
+                echo "Pipeline execution finished at $(date)"
             }
         }
     }
