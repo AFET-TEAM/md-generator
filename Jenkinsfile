@@ -74,8 +74,19 @@ pipeline {
             steps {
                 script {
                     echo ">>> Eski container durduruluyor..."
-                    sh "docker stop ${CONTAINER_NAME} || true"
-                    sh "docker rm ${CONTAINER_NAME} || true"
+                    sh '''
+                        # İsimle durmaya çalış
+                        docker stop ${CONTAINER_NAME} 2>/dev/null || true
+                        docker rm ${CONTAINER_NAME} 2>/dev/null || true
+                        
+                        # Port 3004'ü kullanan tüm containers'ı durdur
+                        PORT_CONTAINERS=$(docker ps -q --filter "publish=3004" 2>/dev/null || echo "")
+                        if [ -n "$PORT_CONTAINERS" ]; then
+                            echo ">>> Port 3004'de çalışan containers durduruluyor..."
+                            docker stop $PORT_CONTAINERS || true
+                            docker rm $PORT_CONTAINERS || true
+                        fi
+                    '''
                 }
             }
         }
@@ -88,7 +99,7 @@ pipeline {
                         docker run -d \
                         --name ${CONTAINER_NAME} \
                         --restart always \
-                        -p 3002:3002 \
+                        -p 3004:3004 \
                         --env-file /var/jenkins_home/create-md-instructions-bot.env \
                         ${DOCKER_IMAGE}:latest
                     """
@@ -100,7 +111,7 @@ pipeline {
             steps {
                 script {
                     echo ">>> Deployment doğrulanıyor..."
-                    sh "sleep 5 && curl -f http://localhost:3002/ || exit 1"
+                    sh "sleep 5 && curl -f http://localhost:3004/ || exit 1"
                 }
             }
         }
