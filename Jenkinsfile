@@ -31,8 +31,6 @@ pipeline {
                             echo "❌ Git clone başarısız"
                             exit 1
                         }
-                        git config user.email "jenkins@example.com"
-                        git config user.name "Jenkins CI"
                     '''
                     echo "✅ Repository başarıyla klonlandı"
                 }
