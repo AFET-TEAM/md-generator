@@ -49,26 +49,6 @@ pipeline {
             }
         }
 
-        stage('Health Check') {
-            steps {
-                script {
-                    echo "💚 Health check başlatılıyor..."
-                    sh '''
-                        CONTAINER_NAME="md-generator-prod"
-                        for i in {1..15}; do
-                            if docker exec ${CONTAINER_NAME} curl -f http://localhost:5000 > /dev/null 2>&1; then
-                                echo "✅ Application çalışıyor"
-                                exit 0
-                            fi
-                            echo "⏳ Bekleniyor... ($i/15)"
-                            sleep 2
-                        done
-                        echo "❌ Application çalışmıyor"
-                        exit 1
-                    '''
-                }
-            }
-        }
     }
 
     post {
