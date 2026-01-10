@@ -2,7 +2,7 @@ pipeline {
     agent {
         docker {
             image 'node:18-alpine'
-            args '-v /var/run/docker.sock:/var/run/docker.sock'
+            args '-v /var/run/docker.sock:/var/run/docker.sock -v /var/jenkins_home:/var/jenkins_home'
         }
     }
     
@@ -12,9 +12,23 @@ pipeline {
         GITHUB_REPO = 'https://github.com/AFET-TEAM/Create-Md-Instructions-Bot-.git'
         DOCKER_IMAGE = "${APP_NAME}"
         CONTAINER_NAME = "${APP_NAME}-container"
+        ENV_FILE = '/var/jenkins_home/${APP_NAME}.env'
     }
     
     stages {
+        stage('Load Environment') {
+            steps {
+                script {
+                    echo ">>> Environment dosyası yükleniyor..."
+                    if (fileExists("${ENV_FILE}")) {
+                        echo "✅ Environment dosyası bulundu: ${ENV_FILE}"
+                    } else {
+                        echo "⚠️  Environment dosyası bulunamadı: ${ENV_FILE}"
+                    }
+                }
+            }
+        }
+        
         stage('Checkout') {
             steps {
                 script {
@@ -28,7 +42,13 @@ pipeline {
             steps {
                 script {
                     echo ">>> Dependencies yükleniyor..."
-                    sh 'npm install'
+                    sh '''
+                        # jenkins_home env dosyasını source et
+                        if [ -f ${ENV_FILE} ]; then
+                            source ${ENV_FILE}
+                        fi
+                        npm install
+                    '''
                 }
             }
         }
@@ -37,7 +57,12 @@ pipeline {
             steps {
                 script {
                     echo ">>> React uygulaması build ediliyor..."
-                    sh 'npm run build'
+                    sh '''
+                        if [ -f ${ENV_FILE} ]; then
+                            source ${ENV_FILE}
+                        fi
+                        npm run build
+                    '''
                 }
             }
         }
