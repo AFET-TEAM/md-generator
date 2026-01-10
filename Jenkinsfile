@@ -1,172 +1,82 @@
 pipeline {
     agent any
-    
-    options {
-        timeout(time: 1, unit: 'HOURS')
-        timestamps()
-        buildDiscarder(logRotator(numToKeepStr: '10'))
-        disableConcurrentBuilds()
-    }
-    
+
     environment {
-        APP_NAME = 'create-md-instructions-bot'
-        DOCKER_IMAGE = 'create-md-instructions-bot'
-        CONTAINER_NAME = 'create-md-instructions-bot'
-        APP_PORT = '3004'
-        NETWORK_NAME = 'app-network'
+        BASE_APP_NAME = "kronos-be"
+        NETWORK_NAME = "app-network"
+        CONTAINER_NAME = "kronos-be-prod"
+        HOST_PORT = "5000"
+        CONTAINER_PORT = "5001"
     }
-    
+
     stages {
-        stage('Clone Repository') {
-            steps {
-                script {
-                    echo "🔄 Repository klonlanıyor..."
-                    deleteDir()
-                    sh '''
-                        git clone --depth=1 https://github.com/AFET-TEAM/Create-Md-Instructions-Bot-.git . || {
-                            echo "❌ Git clone başarısız"
-                            exit 1
-                        }
-                        git config user.email "jenkins@example.com"
-                        git config user.name "Jenkins CI"
-                    '''
-                    echo "✅ Repository başarıyla klonlandı"
-                }
-            }
-        }
-        
+
         stage('Build Docker Image') {
             steps {
                 script {
                     echo "🐳 Docker image oluşturuluyor..."
-                    sh '''
-                        set -e
-                        docker build -t create-md-instructions-bot:latest .
-                        echo "✅ Docker image başarıyla oluşturuldu"
-                    '''
+                    sh """
+                        docker build -t ${BASE_APP_NAME}:mainn .
+                    """
+                    echo "✅ Docker image hazır: ${BASE_APP_NAME}:mainn"
                 }
             }
         }
-        
-        stage('Stop Old Container') {
+
+        stage('Deploy Container') {
             steps {
                 script {
-                    echo "🛑 Eski container durduruluyor..."
-                    sh '''
-                        CONTAINER_NAME="create-md-instructions-bot"
-                        if docker ps -a --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
-                            echo "Eski container durduruluyor..."
-                            docker stop ${CONTAINER_NAME} 2>/dev/null || true
-                            docker rm ${CONTAINER_NAME} 2>/dev/null || true
-                            echo "✅ Eski container kaldırıldı"
-                        else
-                            echo "ℹ️ Eski container bulunamadı"
-                        fi
-                    '''
-                }
-            }
-        }
-        
-        stage('Create Network') {
-            steps {
-                script {
-                    echo "🌐 Docker network kontrol ediliyor..."
-                    sh '''
-                        NETWORK_NAME="app-network"
-                        if ! docker network ls --format '{{.Name}}' | grep -q "^${NETWORK_NAME}$"; then
-                            echo "Network oluşturuluyor..."
-                            docker network create ${NETWORK_NAME}
-                            echo "✅ Network oluşturuldu"
-                        else
-                            echo "✅ Network zaten mevcut"
-                        fi
-                    '''
-                }
-            }
-        }
-        
-        stage('Run Container') {
-            steps {
-                script {
-                    echo "▶️ Container başlatılıyor..."
-                    sh '''
-                        set -e
-                        CONTAINER_NAME="create-md-instructions-bot"
-                        NETWORK_NAME="app-network"
-                        APP_PORT="3004"
-                        
+                    echo "🚀 Container deploy ediliyor: ${CONTAINER_NAME}"
+
+                 
+                    sh """
+                        docker stop ${CONTAINER_NAME} 2>/dev/null || true
+                        docker rm ${CONTAINER_NAME} 2>/dev/null || true
+                    """
+
+           
+                    sh """
                         docker run -d \
                             --name ${CONTAINER_NAME} \
                             --network ${NETWORK_NAME} \
-                            -p ${APP_PORT}:3004 \
-                            create-md-instructions-bot:latest
-                        
-                        echo "✅ Container başarıyla başlatıldı"
-                        echo "🔗 URL: http://localhost:${APP_PORT}"
-                        sleep 3
-                    '''
+                            --restart always \
+                            -p ${HOST_PORT}:${CONTAINER_PORT} \
+                            ${BASE_APP_NAME}:mainn
+                    """
+
+                    echo "✅ Başarıyla deploy edildi: ${CONTAINER_NAME} | Port: ${HOST_PORT}"
                 }
             }
         }
-        
+
         stage('Health Check') {
             steps {
                 script {
-                    echo "💚 Health check yapılıyor..."
-                    sh '''
-                        APP_PORT="3004"
-                        MAX_ATTEMPTS=30
-                        ATTEMPT=0
-                        
-                        while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
-                            ATTEMPT=$((ATTEMPT + 1))
-                            echo "Deneme $ATTEMPT/$MAX_ATTEMPTS..."
-                            
-                            if curl -f http://localhost:${APP_PORT} > /dev/null 2>&1; then
-                                echo "✅ Application sağlıklı, yanıt veriyor"
+                    echo "💚 Health check başlatılıyor..."
+                    sh """
+                        for i in {1..15}; do
+                            if curl -f http://localhost:${HOST_PORT} > /dev/null 2>&1; then
+                                echo "✅ Application çalışıyor"
                                 exit 0
                             fi
+                            echo "⏳ Bekleniyor... ($i/15)"
                             sleep 2
                         done
-                        
-                        echo "❌ Application yanıt vermiyor"
-                        docker logs create-md-instructions-bot || true
+                        echo "❌ Application çalışmıyor"
                         exit 1
-                    '''
+                    """
                 }
             }
         }
     }
-    
+
     post {
         success {
-            script {
-                echo """
-                ✅ PIPELINE BAŞARILI!
-                
-                📊 Deployment Bilgileri:
-                - Container: create-md-instructions-bot
-                - Port: 3004
-                - Image: create-md-instructions-bot:latest
-                - URL: http://localhost:3004
-                """
-            }
+            echo "🎉 Pipeline tamamlandı: ${CONTAINER_NAME} çalışıyor."
         }
-        
+
         failure {
-            script {
-                echo "❌ PIPELINE BAŞARISIZ!"
-                sh '''
-                    echo "📋 Container logs:"
-                    docker logs create-md-instructions-bot 2>/dev/null || echo "Container not found"
-                '''
-            }
-        }
-        
-        always {
-            script {
-                echo "Pipeline execution finished"
-            }
+            echo "❌ Pipeline başarısız oldu!"
         }
     }
 }
