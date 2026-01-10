@@ -18,7 +18,7 @@ pipeline {
         GITHUB_REPO = 'https://github.com/AFET-TEAM/Create-Md-Instructions-Bot-.git'
         NETWORK_NAME = 'app-network'
    
-        CONTAINER_NAME = 'create-md-instructions-bot-default'
+        CONTAINER_NAME = 'create-md-instructions-bot'
         APP_PORT = '3004'
         CONTAINER_PORT = '3004'
         ENV_FILE = '/var/jenkins_home/create-md-instructions-bot.env'
