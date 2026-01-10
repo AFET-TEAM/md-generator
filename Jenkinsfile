@@ -1,10 +1,5 @@
 pipeline {
-    agent {
-        docker {
-            image 'node:18-alpine'
-            args '-v /var/run/docker.sock:/var/run/docker.sock -v /var/jenkins_home:/var/jenkins_home'
-        }
-    }
+    agent any
     
     environment {
         // Proje ayarları
@@ -12,7 +7,6 @@ pipeline {
         GITHUB_REPO = 'https://github.com/AFET-TEAM/Create-Md-Instructions-Bot-.git'
         DOCKER_IMAGE = "${APP_NAME}"
         CONTAINER_NAME = "${APP_NAME}-container"
-        ENV_FILE = '/var/jenkins_home/${APP_NAME}.env'
     }
     
     stages {
@@ -20,10 +14,12 @@ pipeline {
             steps {
                 script {
                     echo ">>> Environment dosyası yükleniyor..."
-                    if (fileExists("${ENV_FILE}")) {
-                        echo "✅ Environment dosyası bulundu: ${ENV_FILE}"
+                    def envPath = '/var/jenkins_home/create-md-instructions-bot.env'
+                    if (fileExists(envPath)) {
+                        echo "✅ Environment dosyası bulundu: ${envPath}"
                     } else {
-                        echo "⚠️  Environment dosyası bulunamadı: ${ENV_FILE}"
+                        echo "⚠️  Environment dosyası bulunamadı: ${envPath}"
+                        echo "Devam ediliyor varsayılan ortam ile..."
                     }
                 }
             }
@@ -43,11 +39,15 @@ pipeline {
                 script {
                     echo ">>> Dependencies yükleniyor..."
                     sh '''
-                        # jenkins_home env dosyasını source et
-                        if [ -f ${ENV_FILE} ]; then
-                            source ${ENV_FILE}
+                        if [ -f /var/jenkins_home/create-md-instructions-bot.env ]; then
+                            echo "✅ Env dosyası yükleniyor..."
+                            set -a
+                            source /var/jenkins_home/create-md-instructions-bot.env
+                            set +a
+                        else
+                            echo "⚠️  Env dosyası bulunamadı, varsayılan değerler kullanılıyor..."
                         fi
-                        npm install
+                        npm install || exit 1
                     '''
                 }
             }
@@ -58,10 +58,15 @@ pipeline {
                 script {
                     echo ">>> React uygulaması build ediliyor..."
                     sh '''
-                        if [ -f ${ENV_FILE} ]; then
-                            source ${ENV_FILE}
+                        if [ -f /var/jenkins_home/create-md-instructions-bot.env ]; then
+                            echo "✅ Env dosyası yükleniyor..."
+                            set -a
+                            source /var/jenkins_home/create-md-instructions-bot.env
+                            set +a
+                        else
+                            echo "⚠️  Env dosyası bulunamadı, varsayılan değerler kullanılıyor..."
                         fi
-                        npm run build
+                        npm run build || exit 1
                     '''
                 }
             }
@@ -95,6 +100,7 @@ pipeline {
                         --name ${CONTAINER_NAME} \
                         --restart always \
                         -p 3002:3002 \
+                        --env-file /var/jenkins_home/create-md-instructions-bot.env \
                         ${DOCKER_IMAGE}:latest
                     """
                 }
@@ -105,7 +111,7 @@ pipeline {
             steps {
                 script {
                     echo ">>> Deployment doğrulanıyor..."
-                    sh "sleep 5 && docker exec ${CONTAINER_NAME} wget -O- http://localhost:3002/ || exit 1"
+                    sh "sleep 5 && curl -f http://localhost:3002/ || exit 1"
                 }
             }
         }
