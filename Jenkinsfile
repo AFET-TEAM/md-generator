@@ -22,13 +22,9 @@ pipeline {
             steps {
                 script {
                     echo ">>> Git repository checkout ediliyor..."
-                    checkout([
-                        $class: 'GitSCM',
-                        branches: [[name: env.GIT_BRANCH ?: '*/main']],
-                        userRemoteConfigs: [[url: env.GITHUB_REPO]]
-                    ])
+                    // Jenkins SCM konfigürasyonundan checkout yap
+                    checkout scm
                     echo "✅ Repository başarıyla checkout edildi"
-                    echo "Branch: ${env.GIT_BRANCH ?: 'main'}"
                 }
             }
         }
