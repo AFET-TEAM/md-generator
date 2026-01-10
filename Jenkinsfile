@@ -2,9 +2,9 @@ pipeline {
     agent any
 
     environment {
-        BASE_APP_NAME = "kronos-be"
+        BASE_APP_NAME = "md-generator"
         NETWORK_NAME = "app-network"
-        CONTAINER_NAME = "kronos-be-prod"
+        CONTAINER_NAME = "md-generator-prod"
         HOST_PORT = "5000"
         CONTAINER_PORT = "5001"
     }
