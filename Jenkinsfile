@@ -111,7 +111,32 @@ pipeline {
             steps {
                 script {
                     echo ">>> Deployment doğrulanıyor..."
-                    sh "sleep 5 && curl -f http://localhost:3004/ || exit 1"
+                    sh '''
+                        # Container'ın başlaması için bekleme
+                        sleep 15
+                        
+                        # Logs'ları kontrol et
+                        echo ">>> Container logs:"
+                        docker logs ${CONTAINER_NAME} || true
+                        
+                        # Health check'i retry ile yap
+                        MAX_RETRIES=10
+                        RETRY=0
+                        while [ $RETRY -lt $MAX_RETRIES ]; do
+                            echo ">>> Health check attempt $(($RETRY + 1))/$MAX_RETRIES"
+                            if curl -f http://localhost:3004/ 2>/dev/null; then
+                                echo "✅ Deployment başarılı!"
+                                exit 0
+                            fi
+                            RETRY=$((RETRY + 1))
+                            if [ $RETRY -lt $MAX_RETRIES ]; then
+                                sleep 3
+                            fi
+                        done
+                        
+                        echo "❌ Health check başarısız!"
+                        exit 1
+                    '''
                 }
             }
         }
