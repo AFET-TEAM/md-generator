@@ -1,0 +1,28 @@
+node_modules/
+.env
+.vscode/
+dist/
+build/
+*.log
+.DS_Store
+*.vs
+*.swp
+*.swo
+*.tmp
+*.bak
+npm-debug.log
+yarn-error.log
+coverage/
+
+# VS Code
+.vscode/
+
+# OS
+Thumbs.db
+Desktop.ini
+
+# Misc
+*.tgz
+
+# Vars
+*.var
