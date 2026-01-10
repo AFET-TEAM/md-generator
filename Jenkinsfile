@@ -100,15 +100,15 @@ pipeline {
             steps {
                 script {
                     echo "🛑 Eski container durduruluyor..."
-                    sh '''
-                        if docker ps -a --format '{{.Names}}' | grep -q "^\\${CONTAINER_NAME}$"; then
-                            docker stop \\${CONTAINER_NAME} 2>/dev/null || true
-                            docker rm \\${CONTAINER_NAME} 2>/dev/null || true
+                    sh """
+                        if docker ps -a --format '{{.Names}}' | grep -q "^${env.CONTAINER_NAME}\$"; then
+                            docker stop ${env.CONTAINER_NAME} 2>/dev/null || true
+                            docker rm ${env.CONTAINER_NAME} 2>/dev/null || true
                             echo "✅ Eski container kaldırıldı"
                         else
                             echo "ℹ️ Eski container bulunamadı"
                         fi
-                    '''
+                    """
                 }
             }
         }
@@ -117,14 +117,14 @@ pipeline {
             steps {
                 script {
                     echo "🌐 Docker network kontrol ediliyor..."
-                    sh '''
-                        if ! docker network ls --format '{{.Name}}' | grep -q "^\\${NETWORK_NAME}$"; then
-                            docker network create \\${NETWORK_NAME}
+                    sh """
+                        if ! docker network ls --format '{{.Name}}' | grep -q "^${env.NETWORK_NAME}\$"; then
+                            docker network create ${env.NETWORK_NAME}
                             echo "✅ Network oluşturuldu"
                         else
                             echo "✅ Network zaten mevcut"
                         fi
-                    '''
+                    """
                 }
             }
         }
@@ -133,17 +133,17 @@ pipeline {
             steps {
                 script {
                     echo "▶️ Yeni container başlatılıyor..."
-                    sh '''
+                    sh """
                         set -e
-                        docker run -d \
-                            --name \\${CONTAINER_NAME} \
-                            --network \\${NETWORK_NAME} \
-                            -p \\${APP_PORT}:\\${CONTAINER_PORT} \
-                            \\${DOCKER_IMAGE}:latest
+                        docker run -d \\
+                            --name ${env.CONTAINER_NAME} \\
+                            --network ${env.NETWORK_NAME} \\
+                            -p ${env.APP_PORT}:${env.CONTAINER_PORT} \\
+                            ${env.DOCKER_IMAGE}:latest
                         echo "✅ Container başarıyla başlatıldı"
-                        echo "🔗 URL: http://localhost:\\${APP_PORT}"
+                        echo "🔗 URL: http://localhost:${env.APP_PORT}"
                         sleep 5
-                    '''
+                    """
                 }
             }
         }
@@ -152,10 +152,10 @@ pipeline {
             steps {
                 script {
                     echo "💚 Health check yapılıyor..."
-                    sh '''
+                    sh """
                         for i in {1..30}; do
-                            echo "Deneme \\$i/30..."
-                            if curl -f http://localhost:\\${APP_PORT} > /dev/null 2>&1; then
+                            echo "Deneme \$i/30..."
+                            if curl -f http://localhost:${env.APP_PORT} > /dev/null 2>&1; then
                                 echo "✅ Application sağlıklı, yanıt veriyor"
                                 exit 0
                             fi
@@ -163,7 +163,7 @@ pipeline {
                         done
                         echo "❌ Application yanıt vermiyor"
                         exit 1
-                    '''
+                    """
                 }
             }
         }
@@ -192,10 +192,10 @@ pipeline {
                 2. Network kontrol: docker network ls
                 3. Image kontrol: docker images | grep ${DOCKER_IMAGE}
                 """
-                sh '''
+                sh """
                     echo "Container logs:"
-                    docker logs \\${CONTAINER_NAME} 2>/dev/null || echo "Container not found"
-                '''
+                    docker logs ${env.CONTAINER_NAME} 2>/dev/null || echo "Container not found"
+                """
             }
         }
 
