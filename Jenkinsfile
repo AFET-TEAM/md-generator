@@ -37,18 +37,7 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 script {
-                    echo ">>> Dependencies yükleniyor..."
-                    sh '''
-                        if [ -f /var/jenkins_home/create-md-instructions-bot.env ]; then
-                            echo "✅ Env dosyası yükleniyor..."
-                            set -a
-                            . /var/jenkins_home/create-md-instructions-bot.env
-                            set +a
-                        else
-                            echo "⚠️  Env dosyası bulunamadı, varsayılan değerler kullanılıyor..."
-                        fi
-                        npm install || exit 1
-                    '''
+                    echo ">>> Aşama atlanıyor (Dockerfile'da npm install yapılacak)..."
                 }
             }
         }
@@ -56,18 +45,7 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    echo ">>> React uygulaması build ediliyor..."
-                    sh '''
-                        if [ -f /var/jenkins_home/create-md-instructions-bot.env ]; then
-                            echo "✅ Env dosyası yükleniyor..."
-                            set -a
-                            . /var/jenkins_home/create-md-instructions-bot.env
-                            set +a
-                        else
-                            echo "⚠️  Env dosyası bulunamadı, varsayılan değerler kullanılıyor..."
-                        fi
-                        npm run build || exit 1
-                    '''
+                    echo ">>> Aşama atlanıyor (Dockerfile'da npm run build yapılacak)..."
                 }
             }
         }
@@ -76,7 +54,18 @@ pipeline {
             steps {
                 script {
                     echo ">>> Docker image oluşturuluyor..."
-                    sh "docker build -t ${DOCKER_IMAGE}:latest -t ${DOCKER_IMAGE}:${BUILD_NUMBER} ."
+                    sh '''
+                        if [ -f /var/jenkins_home/create-md-instructions-bot.env ]; then
+                            set -a
+                            . /var/jenkins_home/create-md-instructions-bot.env
+                            set +a
+                        fi
+                        docker build \
+                            --build-arg GEMINI_API_KEY="${GEMINI_API_KEY:-}" \
+                            --build-arg ENVIRONMENT="${ENVIRONMENT:-development}" \
+                            -t ${DOCKER_IMAGE}:latest \
+                            -t ${DOCKER_IMAGE}:${BUILD_NUMBER} .
+                    '''
                 }
             }
         }

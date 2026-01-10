@@ -5,6 +5,14 @@ FROM node:18-alpine AS builder
 
 WORKDIR /app
 
+# Build arguments
+ARG GEMINI_API_KEY
+ARG ENVIRONMENT
+
+# Environment variables
+ENV REACT_APP_GEMINI_API_KEY=${GEMINI_API_KEY}
+ENV REACT_APP_ENVIRONMENT=${ENVIRONMENT}
+
 # Package files kopyala
 COPY package*.json ./
 
