@@ -100,15 +100,16 @@ pipeline {
             steps {
                 script {
                     echo "🛑 Eski container durduruluyor..."
-                    sh """
-                        if docker ps -a --format '{{.Names}}' | grep -q "^${env.CONTAINER_NAME}\$"; then
-                            docker stop ${env.CONTAINER_NAME} 2>/dev/null || true
-                            docker rm ${env.CONTAINER_NAME} 2>/dev/null || true
+                    def containerName = env.CONTAINER_NAME
+                    sh '''
+                        if docker ps -a --format '{{.Names}}' | grep -q "^''' + containerName + '''$"; then
+                            docker stop ''' + containerName + ''' 2>/dev/null || true
+                            docker rm ''' + containerName + ''' 2>/dev/null || true
                             echo "✅ Eski container kaldırıldı"
                         else
                             echo "ℹ️ Eski container bulunamadı"
                         fi
-                    """
+                    '''
                 }
             }
         }
@@ -117,14 +118,15 @@ pipeline {
             steps {
                 script {
                     echo "🌐 Docker network kontrol ediliyor..."
-                    sh """
-                        if ! docker network ls --format '{{.Name}}' | grep -q "^${env.NETWORK_NAME}\$"; then
-                            docker network create ${env.NETWORK_NAME}
+                    def networkName = env.NETWORK_NAME
+                    sh '''
+                        if ! docker network ls --format '{{.Name}}' | grep -q "^''' + networkName + '''$"; then
+                            docker network create ''' + networkName + '''
                             echo "✅ Network oluşturuldu"
                         else
                             echo "✅ Network zaten mevcut"
                         fi
-                    """
+                    '''
                 }
             }
         }
@@ -133,17 +135,22 @@ pipeline {
             steps {
                 script {
                     echo "▶️ Yeni container başlatılıyor..."
-                    sh """
+                    def containerName = env.CONTAINER_NAME
+                    def networkName = env.NETWORK_NAME
+                    def appPort = env.APP_PORT
+                    def containerPort = env.CONTAINER_PORT
+                    def dockerImage = env.DOCKER_IMAGE
+                    sh '''
                         set -e
-                        docker run -d \\
-                            --name ${env.CONTAINER_NAME} \\
-                            --network ${env.NETWORK_NAME} \\
-                            -p ${env.APP_PORT}:${env.CONTAINER_PORT} \\
-                            ${env.DOCKER_IMAGE}:latest
+                        docker run -d \
+                            --name ''' + containerName + ''' \
+                            --network ''' + networkName + ''' \
+                            -p ''' + appPort + ''':''' + containerPort + ''' \
+                            ''' + dockerImage + ''':latest
                         echo "✅ Container başarıyla başlatıldı"
-                        echo "🔗 URL: http://localhost:${env.APP_PORT}"
+                        echo "🔗 URL: http://localhost:''' + appPort + '''"
                         sleep 5
-                    """
+                    '''
                 }
             }
         }
@@ -152,10 +159,11 @@ pipeline {
             steps {
                 script {
                     echo "💚 Health check yapılıyor..."
-                    sh """
+                    def appPort = env.APP_PORT
+                    sh '''
                         for i in {1..30}; do
-                            echo "Deneme \$i/30..."
-                            if curl -f http://localhost:${env.APP_PORT} > /dev/null 2>&1; then
+                            echo "Deneme $i/30..."
+                            if curl -f http://localhost:''' + appPort + ''' > /dev/null 2>&1; then
                                 echo "✅ Application sağlıklı, yanıt veriyor"
                                 exit 0
                             fi
@@ -163,7 +171,7 @@ pipeline {
                         done
                         echo "❌ Application yanıt vermiyor"
                         exit 1
-                    """
+                    '''
                 }
             }
         }
@@ -192,10 +200,11 @@ pipeline {
                 2. Network kontrol: docker network ls
                 3. Image kontrol: docker images | grep ${DOCKER_IMAGE}
                 """
-                sh """
+                def containerName = env.CONTAINER_NAME
+                sh '''
                     echo "Container logs:"
-                    docker logs ${env.CONTAINER_NAME} 2>/dev/null || echo "Container not found"
-                """
+                    docker logs ''' + containerName + ''' 2>/dev/null || echo "Container not found"
+                '''
             }
         }
 
