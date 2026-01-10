@@ -1,5 +1,10 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'node:18-alpine'
+            args '-v /var/run/docker.sock:/var/run/docker.sock'
+        }
+    }
     
     environment {
         // Proje ayarları
@@ -75,7 +80,7 @@ pipeline {
             steps {
                 script {
                     echo ">>> Deployment doğrulanıyor..."
-                    sh "sleep 5 && curl -f http://localhost:3002/ || exit 1"
+                    sh "sleep 5 && docker exec ${CONTAINER_NAME} wget -O- http://localhost:3002/ || exit 1"
                 }
             }
         }
