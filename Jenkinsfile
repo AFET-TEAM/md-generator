@@ -1,9 +1,6 @@
 pipeline {
     agent any
-      environment {
-        APP_NAME_API = " create-md-instructions-bot"
-        NETWORK_NAME = "app-network"
-    }
+    
     options {
         timeout(time: 1, unit: 'HOURS')
         timestamps()
@@ -17,11 +14,10 @@ pipeline {
         DOCKER_IMAGE = "${APP_NAME}"
         GITHUB_REPO = 'https://github.com/AFET-TEAM/Create-Md-Instructions-Bot-.git'
         NETWORK_NAME = 'app-network'
-   
+        // Varsayılan değerler
         CONTAINER_NAME = 'create-md-instructions-bot'
         APP_PORT = '3004'
         CONTAINER_PORT = '3004'
-        ENV_FILE = '/var/jenkins_home/create-md-instructions-bot.env'
     }
     
     stages {
@@ -53,33 +49,17 @@ pipeline {
                     if (branchName == 'main' || branchName == 'master') {
                         env.CONTAINER_NAME = "${APP_NAME}-prod"
                         env.APP_PORT = "3004"
-                        env.ENV_FILE = "/var/jenkins_home/create-md-instructions-bot.env"
                         echo "✅ PROD Ortamı Seçildi (Port: 3004)"
                     }
                     else if (branchName == 'develop') {
                         env.CONTAINER_NAME = "${APP_NAME}-dev"
                         env.APP_PORT = "3004"
-                        env.ENV_FILE = "/var/jenkins_home/create-md-instructions-bot-dev.env"
                         echo "✅ DEV Ortamı Seçildi (Port: 3004)"
                     }
                     else {
                         env.CONTAINER_NAME = "${APP_NAME}-test"
                         env.APP_PORT = "3004"
-                        env.ENV_FILE = "/var/jenkins_home/create-md-instructions-bot-test.env"
                         echo "✅ TEST Ortamı Seçildi (Port: 3004)"
-                    }
-                }
-            }
-        }
-        
-        stage('Load Environment Variables') {
-            steps {
-                script {
-                    echo "📂 Environment dosyası yükleniyor: ${env.ENV_FILE}"
-                    if (fileExists(env.ENV_FILE)) {
-                        echo "✅ Environment dosyası bulundu"
-                    } else {
-                        echo "⚠️  Environment dosyası bulunamadı (varsayılan değerler kullanılacak)"
                     }
                 }
             }
@@ -91,20 +71,9 @@ pipeline {
                     echo "🐳 Docker image oluşturuluyor..."
                     sh '''
                         set -e
-                        
-                        # Environment dosyasını yükle
-                        if [ -f "${ENV_FILE}" ]; then
-                            echo "Loading environment from ${ENV_FILE}"
-                            export $(grep -v '^#' ${ENV_FILE} | xargs)
-                        fi
-                        
-                        # Docker image oluştur
                         docker build \
-                            --build-arg GEMINI_API_KEY="${GEMINI_API_KEY:-}" \
-                            --build-arg ENVIRONMENT="${ENVIRONMENT:-development}" \
                             -t ${DOCKER_IMAGE}:${BUILD_NUMBER} \
                             -t ${DOCKER_IMAGE}:latest .
-                        
                         echo "✅ Docker image başarıyla oluşturuldu"
                     '''
                 }
@@ -153,18 +122,11 @@ pipeline {
                     sh '''
                         set -e
                         
-                        # Environment dosyasını yükle
-                        ENV_ARGS=""
-                        if [ -f "${ENV_FILE}" ]; then
-                            ENV_ARGS=$(grep -v '^#' ${ENV_FILE} | sed 's/^/-e /' | tr '\n' ' ')
-                        fi
-                        
                         # Container'ı başlat
                         docker run -d \
                             --name ${CONTAINER_NAME} \
                             --network ${NETWORK_NAME} \
                             -p ${APP_PORT}:${CONTAINER_PORT} \
-                            ${ENV_ARGS} \
                             ${DOCKER_IMAGE}:latest
                         
                         echo "✅ Container başarıyla başlatıldı"

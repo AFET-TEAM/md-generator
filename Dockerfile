@@ -6,10 +6,6 @@ FROM node:18-alpine AS builder
 
 WORKDIR /app
 
-# Build arguments (secret olarak işlenecek)
-ARG GEMINI_API_KEY=""
-ARG ENVIRONMENT="development"
-
 # Package files kopyala
 COPY package*.json ./
 
@@ -19,14 +15,8 @@ RUN npm install
 # Kaynak kodları kopyala
 COPY . .
 
-# React uygulamasını build et (build-time secrets'ları kullan)
-RUN --mount=type=secret,id=gemini_api_key \
-    --mount=type=secret,id=environment \
-    REACT_APP_GEMINI_API_KEY=$(cat /run/secrets/gemini_api_key 2>/dev/null || echo "${GEMINI_API_KEY}") \
-    REACT_APP_ENVIRONMENT=$(cat /run/secrets/environment 2>/dev/null || echo "${ENVIRONMENT}") \
-    npm run build
-
-# Stage 2: Production aşaması
+# React uygulamasını build et
+RUN npm run build
 FROM node:18-alpine
 
 WORKDIR /app
