@@ -118,7 +118,6 @@ Frontend: Gösterim ve İndirme
 
 ### 1️⃣ Adım: Uygulamaya Giriş
 
-- Kullanıcı `http://localhost:3000` adresine erişir
 - Header bölümünde "🤖 AI Ruleset Generator" başlığı görülür
 - Backend API'nin sağlık durumu ve AI sağlayıcı bilgisi gösterilir
 
@@ -574,23 +573,14 @@ docker run -p 5000:5000 --name md-generator-prod \
 ## 🚀 Gelecek Geliştirmeler
 
 - [ ] Proje şablonları kütüphanesi
-- [ ] Multi-language support (Türkçe, İngilizce, Arapça)
 - [ ] Real-time collaboration
 - [ ] Version control ve history
 - [ ] Team workspaces
 - [ ] Custom AI prompt editor
 - [ ] Ruleset templates marketplace
 - [ ] Integration dengan GitHub/GitLab
-- [ ] WebSocket live updates
 
----
 
-## 📞 İletişim ve Destek
-
-**Repository:** [GitHub - AFET-TEAM/Create-Md-Instructions-Bot](https://github.com/AFET-TEAM/Create-Md-Instructions-Bot-)  
-**Backend:** [GitHub - AFET-TEAM/md-generator](https://github.com/AFET-TEAM/md-generator)
-
----
 
 **Son Güncelleme:** 11 Ocak 2026  
 **Versiyon:** 1.0.0
