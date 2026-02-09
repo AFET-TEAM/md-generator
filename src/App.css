@@ -66,6 +66,41 @@
   background: rgba(255, 255, 255, 0.3);
 }
 
+/* Mode Tabs */
+.mode-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 0;
+  margin-top: 1.5rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  padding: 4px;
+  display: inline-flex;
+}
+
+.mode-tab {
+  padding: 0.75rem 2rem;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+
+.mode-tab:hover {
+  color: white;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.mode-tab.active {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
 /* Form Styles */
 .project-form {
   background: rgba(255, 255, 255, 0.1);
@@ -320,26 +355,815 @@
   100% { transform: rotate(360deg); }
 }
 
+/* ==========================================
+   Multi-Agent Configurator Styles
+   ========================================== */
+
+/* Intro Card */
+.multi-agent-intro {
+  animation: fadeIn 0.3s ease-in;
+}
+
+.intro-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  text-align: left;
+}
+
+.intro-card h3 {
+  color: #4fc3f7;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.intro-card p {
+  font-size: 1.05rem;
+  line-height: 1.6;
+  opacity: 0.9;
+  margin-bottom: 1.5rem;
+}
+
+.intro-features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.intro-feature {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.intro-feature strong {
+  display: block;
+  color: #81c784;
+  margin-bottom: 0.5rem;
+  font-size: 1.05rem;
+}
+
+.intro-feature span {
+  font-size: 0.9rem;
+  opacity: 0.8;
+  line-height: 1.5;
+}
+
+/* Multi-Agent Configurator */
+.multi-agent-configurator {
+  animation: fadeIn 0.3s ease-in;
+}
+
+.configurator-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.configurator-header h2 {
+  color: #4fc3f7;
+  font-size: 1.8rem;
+  margin-bottom: 0.5rem;
+}
+
+.configurator-header p {
+  opacity: 0.8;
+  font-size: 1rem;
+}
+
+/* Agent Section */
+.agents-section {
+  margin-bottom: 2rem;
+}
+
+.agents-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.agents-section-header h3 {
+  color: #4fc3f7;
+  font-size: 1.3rem;
+  margin: 0;
+}
+
+.agent-add-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.template-dropdown select {
+  padding: 0.75rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  font-size: 0.9rem;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+}
+
+.template-dropdown select option {
+  background: #3a3a5c;
+  color: white;
+}
+
+.agents-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Agent Card */
+.agent-card {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+
+.agent-card:hover {
+  border-color: rgba(79, 195, 247, 0.3);
+}
+
+.agent-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  background: rgba(0, 0, 0, 0.15);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.agent-card-title {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.agent-number {
+  background: rgba(79, 195, 247, 0.2);
+  color: #4fc3f7;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.agent-name-display {
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.agent-card-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.agent-toggle-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: white;
+  padding: 0.4rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background 0.2s;
+}
+
+.agent-toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.agent-remove-btn {
+  background: rgba(239, 83, 80, 0.2);
+  border: 1px solid rgba(239, 83, 80, 0.3);
+  color: #ef5350;
+  padding: 0.4rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.2s;
+}
+
+.agent-remove-btn:hover {
+  background: rgba(239, 83, 80, 0.4);
+}
+
+.agent-card-body {
+  padding: 1.5rem;
+  animation: fadeIn 0.2s ease-in;
+}
+
+/* Agent Skills Section */
+.agent-skills-section {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.skills-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.skills-header label {
+  color: #4fc3f7;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.agent-skill-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.skill-chip {
+  background: rgba(79, 195, 247, 0.15);
+  border: 1px solid rgba(79, 195, 247, 0.3);
+  color: #81d4fa;
+  padding: 0.3rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  text-transform: capitalize;
+}
+
+/* ==========================================
+   Skill Selector Styles
+   ========================================== */
+
+.skill-selector {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 12px;
+  padding: 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  margin-top: 0.75rem;
+}
+
+.skill-search {
+  margin-bottom: 1rem;
+}
+
+.skill-search-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+  font-size: 0.95rem;
+}
+
+.skill-search-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.skill-search-input:focus {
+  outline: none;
+  border-color: #4fc3f7;
+  box-shadow: 0 0 0 2px rgba(79, 195, 247, 0.15);
+}
+
+.selected-skills-summary {
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  background: rgba(79, 195, 247, 0.08);
+  border-radius: 8px;
+  border: 1px solid rgba(79, 195, 247, 0.15);
+}
+
+.selected-count {
+  font-size: 0.85rem;
+  color: #4fc3f7;
+  font-weight: 600;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.selected-skill-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.skill-tag {
+  background: rgba(79, 195, 247, 0.2);
+  color: #b3e5fc;
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.skill-tag-remove {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+}
+
+.skill-tag-remove:hover {
+  color: #ef5350;
+}
+
+.skill-categories {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.skill-category {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.skill-category-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.skill-category-header:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.category-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.category-arrow {
+  font-size: 0.7rem;
+  transition: transform 0.2s;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.category-arrow.expanded {
+  transform: rotate(90deg);
+}
+
+.category-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.category-badge {
+  background: #4fc3f7;
+  color: #1a1a2e;
+  padding: 0.1rem 0.5rem;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.category-select-all {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.8);
+  padding: 0.3rem 0.75rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.2s;
+}
+
+.category-select-all:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.skill-category-items {
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  animation: fadeIn 0.2s ease-in;
+}
+
+.skill-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.skill-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.skill-item.selected {
+  background: rgba(79, 195, 247, 0.1);
+  border: 1px solid rgba(79, 195, 247, 0.2);
+}
+
+.skill-item input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  accent-color: #4fc3f7;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.skill-item-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.skill-item-name {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #f1f3f4;
+}
+
+.skill-item-desc {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.4;
+}
+
+/* ==========================================
+   Config File Selection Styles
+   ========================================== */
+
+.config-file-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.config-file-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.config-file-option:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.config-file-option.selected {
+  background: rgba(79, 195, 247, 0.1);
+  border-color: rgba(79, 195, 247, 0.3);
+}
+
+.config-file-option input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  accent-color: #4fc3f7;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.config-file-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.config-file-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #81d4fa;
+  font-family: 'Fira Code', 'Courier New', monospace;
+}
+
+.config-file-desc {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.4;
+}
+
+.config-file-tool {
+  font-size: 0.75rem;
+  color: #81c784;
+  font-weight: 600;
+  margin-top: 0.25rem;
+}
+
+/* Generate Actions */
+.generate-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin: 2rem 0;
+}
+
+/* ==========================================
+   Config File Manager / Output Styles
+   ========================================== */
+
+.config-file-manager {
+  margin-top: 2rem;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  padding: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  text-align: left;
+  animation: fadeIn 0.3s ease-in;
+}
+
+.config-manager-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.config-manager-header h3 {
+  color: #4fc3f7;
+  font-size: 1.3rem;
+  margin: 0;
+}
+
+.config-manager-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+/* Config Tabs */
+.config-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 1.5rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  padding: 3px;
+  overflow-x: auto;
+}
+
+.config-tab {
+  padding: 0.6rem 1.25rem;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.2s;
+  white-space: nowrap;
+  font-family: 'Fira Code', 'Courier New', monospace;
+}
+
+.config-tab:hover {
+  color: white;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.config-tab.active {
+  background: rgba(79, 195, 247, 0.2);
+  color: #4fc3f7;
+}
+
+/* Config File Content */
+.config-file-content {
+  margin-bottom: 1.5rem;
+}
+
+.config-file-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 10px 10px 0 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: none;
+  flex-wrap: wrap;
+}
+
+.config-filename {
+  font-family: 'Fira Code', 'Courier New', monospace;
+  font-size: 0.9rem;
+  color: #81d4fa;
+  font-weight: 600;
+}
+
+.config-format-badge {
+  background: rgba(129, 199, 132, 0.2);
+  color: #81c784;
+  padding: 0.15rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.config-file-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+.config-file-actions .action-btn {
+  padding: 0.4rem 1rem;
+  font-size: 0.85rem;
+}
+
+.config-preview {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0 0 10px 10px;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.config-preview .markdown-content {
+  border-radius: 0 0 10px 10px;
+  border: none;
+}
+
+.config-raw-content {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 1.5rem;
+  border-radius: 0 0 10px 10px;
+  border: none;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: 'Fira Code', 'Courier New', monospace;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: #e0e0e0;
+  margin: 0;
+}
+
+.raw-view-toggle {
+  margin-top: 0.75rem;
+}
+
+.raw-view-toggle summary {
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.85rem;
+  padding: 0.5rem;
+  transition: color 0.2s;
+}
+
+.raw-view-toggle summary:hover {
+  color: white;
+}
+
+.raw-view-toggle .config-raw-content {
+  border-radius: 10px;
+  margin-top: 0.5rem;
+}
+
+/* Config Usage Instructions */
+.config-usage-instructions {
+  margin-top: 2rem;
+  padding: 1.25rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.config-usage-instructions h4 {
+  color: #4fc3f7;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+}
+
+.config-usage-instructions ul {
+  list-style: none;
+  padding: 0;
+}
+
+.config-usage-instructions li {
+  padding: 0.5rem 0;
+  line-height: 1.6;
+  font-size: 0.9rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.config-usage-instructions li:last-child {
+  border-bottom: none;
+}
+
+.config-usage-instructions strong {
+  color: #81d4fa;
+  font-family: 'Fira Code', 'Courier New', monospace;
+  font-size: 0.85rem;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .App-header h1 {
     font-size: 2rem;
   }
-  
+
   .App-main {
     padding: 1rem;
   }
-  
+
   .project-form,
   .ruleset-display {
     padding: 1.5rem;
   }
-  
+
   .form-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .ruleset-actions {
     flex-direction: column;
+  }
+
+  .mode-tabs {
+    flex-direction: column;
+    width: 100%;
+    max-width: 400px;
+  }
+
+  .mode-tab {
+    width: 100%;
+  }
+
+  .agents-section-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .agent-add-actions {
+    width: 100%;
+  }
+
+  .agent-card-header {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: flex-start;
+  }
+
+  .config-file-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .config-manager-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .config-tabs {
+    flex-direction: column;
+  }
+
+  .config-file-toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .config-file-actions {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .generate-actions {
+    flex-direction: column;
+  }
+
+  .intro-features {
+    grid-template-columns: 1fr;
   }
 }
