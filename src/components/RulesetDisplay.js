@@ -1,8 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 
 const RulesetDisplay = ({ ruleset, onReset }) => {
   const [viewMode, setViewMode] = useState('markdown'); // 'markdown' or 'json'
+
+  // Performance Optimization: Memoize JSON stringification
+  // This prevents expensive serialization on every render when viewMode changes
+  // or when parent re-renders but ruleset data is the same.
+  const formattedJson = useMemo(() => {
+    return JSON.stringify(ruleset.json_data, null, 2);
+  }, [ruleset.json_data]);
 
   const downloadFile = (content, filename, contentType) => {
     const a = document.createElement('a');
@@ -21,7 +28,7 @@ const RulesetDisplay = ({ ruleset, onReset }) => {
 
   const handleDownloadJSON = () => {
     downloadFile(
-      JSON.stringify(ruleset.json_data, null, 2), 
+      formattedJson,
       'project-ruleset.json', 
       'application/json'
     );
@@ -70,7 +77,7 @@ const RulesetDisplay = ({ ruleset, onReset }) => {
         
         <button 
           className="action-btn"
-          onClick={() => copyToClipboard(viewMode === 'markdown' ? ruleset.markdown : JSON.stringify(ruleset.json_data, null, 2))}
+          onClick={() => copyToClipboard(viewMode === 'markdown' ? ruleset.markdown : formattedJson)}
         >
           📋 Kopyala
         </button>
@@ -100,7 +107,7 @@ const RulesetDisplay = ({ ruleset, onReset }) => {
               whiteSpace: 'pre-wrap',
               wordBreak: 'break-word'
             }}>
-              {JSON.stringify(ruleset.json_data, null, 2)}
+              {formattedJson}
             </pre>
           </div>
         )}
