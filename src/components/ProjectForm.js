@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import API_BASE_URL from '../config/api';
 
 const ProjectForm = ({ onSubmit }) => {
   const [formData, setFormData] = useState({
@@ -45,7 +46,7 @@ const ProjectForm = ({ onSubmit }) => {
     // Load available options from API
     const loadOptions = async () => {
       try {
-        const response = await axios.get('https://ai-ruleset-backend-1.onrender.com/project-categories');
+        const response = await axios.get(`${API_BASE_URL}/project-categories`);
         setProjectOptions(response.data);
       } catch (error) {
         console.error('Error loading options:', error);
