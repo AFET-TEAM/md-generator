@@ -2,18 +2,21 @@ import React, { useState } from 'react';
 import SkillSelector from './SkillSelector';
 import { AGENT_TEMPLATES } from '../data/skills';
 
+// Performance Optimization: Wrapped in React.memo to prevent unnecessary re-renders
+// when other agents are updated. Only re-renders if its own props change.
 const AgentCard = ({ agent, onUpdate, onRemove, index }) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const [showSkillSelector, setShowSkillSelector] = useState(false);
 
+  // Pass index to onUpdate to avoid creating a new function in the parent for each item
   const handleFieldChange = (field, value) => {
-    onUpdate({ ...agent, [field]: value });
+    onUpdate(index, { ...agent, [field]: value });
   };
 
   const handleTemplateSelect = (templateId) => {
     const template = AGENT_TEMPLATES.find(t => t.id === templateId);
     if (template) {
-      onUpdate({
+      onUpdate(index, {
         ...agent,
         name: template.name,
         description: template.description,
@@ -41,7 +44,7 @@ const AgentCard = ({ agent, onUpdate, onRemove, index }) => {
           <button
             type="button"
             className="agent-remove-btn"
-            onClick={onRemove}
+            onClick={() => onRemove(index)}
           >
             Kaldir
           </button>
@@ -136,4 +139,4 @@ const AgentCard = ({ agent, onUpdate, onRemove, index }) => {
   );
 };
 
-export default AgentCard;
+export default React.memo(AgentCard);
