@@ -43,7 +43,11 @@ const MultiAgentConfigurator = ({ projectData, onBack }) => {
   const updateAgent = useCallback((index, updatedAgent) => {
     setAgents(prevAgents => {
       const newAgents = [...prevAgents];
-      newAgents[index] = updatedAgent;
+      if (typeof updatedAgent === 'function') {
+        newAgents[index] = updatedAgent(newAgents[index]);
+      } else {
+        newAgents[index] = updatedAgent;
+      }
       return newAgents;
     });
   }, []);
