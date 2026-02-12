@@ -79,5 +79,6 @@ describe('MultiAgentConfigurator Performance Optimization', () => {
     // CONCLUSION:
     // Since props for Agent 1 are identical (referentially),
     // the React.memo wrapped AgentCard (implemented in source) will SKIP this render.
+
   });
 });

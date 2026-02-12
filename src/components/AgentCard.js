@@ -3,9 +3,12 @@ import SkillSelector from './SkillSelector';
 import { AGENT_TEMPLATES } from '../data/skills';
 
 const AgentCard = React.memo(({ agent, onUpdate, onRemove, index }) => {
+// Performance Optimization: Wrapped in React.memo to prevent unnecessary re-renders
+// when other agents are updated. Only re-renders if its own props change.
   const [isExpanded, setIsExpanded] = useState(true);
   const [showSkillSelector, setShowSkillSelector] = useState(false);
 
+  // Pass index to onUpdate to avoid creating a new function in the parent for each item
   const handleFieldChange = (field, value) => {
     onUpdate(index, { ...agent, [field]: value });
   };
@@ -136,4 +139,4 @@ const AgentCard = React.memo(({ agent, onUpdate, onRemove, index }) => {
   );
 });
 
-export default AgentCard;
+export default React.memo(AgentCard);
