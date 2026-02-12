@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import AgentCard from './AgentCard';
 import ConfigFileManager from './ConfigFileManager';
 import { AGENT_TEMPLATES, CONFIG_FILE_TYPES } from '../data/skills';
@@ -37,16 +37,22 @@ const MultiAgentConfigurator = ({ projectData, onBack }) => {
     }
   };
 
-  const updateAgent = (index, updatedAgent) => {
-    const newAgents = [...agents];
-    newAgents[index] = updatedAgent;
-    setAgents(newAgents);
-  };
+  // Performance Optimization: Use useCallback to ensure stable function reference
+  // This allows AgentCard (memoized) to skip re-renders unless its own props change
+  const updateAgent = useCallback((index, updatedAgent) => {
+    setAgents(prevAgents => {
+      const newAgents = [...prevAgents];
+      newAgents[index] = updatedAgent;
+      return newAgents;
+    });
+  }, []);
 
-  const removeAgent = (index) => {
-    if (agents.length <= 1) return;
-    setAgents(agents.filter((_, i) => i !== index));
-  };
+  const removeAgent = useCallback((index) => {
+    setAgents(prevAgents => {
+      if (prevAgents.length <= 1) return prevAgents;
+      return prevAgents.filter((_, i) => i !== index);
+    });
+  }, []);
 
   const toggleConfigFile = (configId) => {
     if (selectedConfigFiles.includes(configId)) {
@@ -458,8 +464,8 @@ const MultiAgentConfigurator = ({ projectData, onBack }) => {
               key={agent.id}
               agent={agent}
               index={index}
-              onUpdate={(updated) => updateAgent(index, updated)}
-              onRemove={() => removeAgent(index)}
+              onUpdate={updateAgent}
+              onRemove={removeAgent}
             />
           ))}
         </div>
