@@ -13,8 +13,10 @@ const AgentCard = React.memo(({ agent, onUpdate, onRemove, index }) => {
     onUpdate(index, { ...agent, [field]: value });
   };
 
-  const handleSkillsChange = useCallback((skills) => {
-    onUpdate(index, prev => ({ ...prev, skills }));
+  // Performance Optimization: Use stable callback for skills update
+  // This prevents SkillSelector from re-rendering when other fields (like name) change
+  const handleSkillsChange = useCallback((newSkills) => {
+    onUpdate(index, (prevAgent) => ({ ...prevAgent, skills: newSkills }));
   }, [index, onUpdate]);
 
   const handleTemplateSelect = (templateId) => {
