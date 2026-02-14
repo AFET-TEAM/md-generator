@@ -142,4 +142,4 @@ const SkillSelector = ({ selectedSkills, onSkillsChange }) => {
   );
 };
 
-export default SkillSelector;
+export default React.memo(SkillSelector);
