@@ -1,5 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { SKILL_CATEGORIES } from '../data/skills';
+
+// Optimization: Create a map for O(1) skill name lookup at module level
+// This runs once when the module loads, not on every component mount
+const skillMap = new Map();
+SKILL_CATEGORIES.forEach(cat => {
+  cat.skills.forEach(skill => {
+    skillMap.set(skill.id, skill.name);
+  });
+});
 
 const SkillSelector = ({ selectedSkills, onSkillsChange }) => {
   const [expandedCategory, setExpandedCategory] = useState(null);
@@ -31,22 +40,21 @@ const SkillSelector = ({ selectedSkills, onSkillsChange }) => {
     }
   };
 
-  const filteredCategories = searchTerm
-    ? SKILL_CATEGORIES.map(cat => ({
-        ...cat,
-        skills: cat.skills.filter(skill =>
-          skill.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          skill.description.toLowerCase().includes(searchTerm.toLowerCase())
-        )
-      })).filter(cat => cat.skills.length > 0)
-    : SKILL_CATEGORIES;
+  // Optimization: Memoize filteredCategories to avoid expensive filtering on every render
+  const filteredCategories = useMemo(() => {
+    return searchTerm
+      ? SKILL_CATEGORIES.map(cat => ({
+          ...cat,
+          skills: cat.skills.filter(skill =>
+            skill.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            skill.description.toLowerCase().includes(searchTerm.toLowerCase())
+          )
+        })).filter(cat => cat.skills.length > 0)
+      : SKILL_CATEGORIES;
+  }, [searchTerm]);
 
   const getSkillName = (skillId) => {
-    for (const cat of SKILL_CATEGORIES) {
-      const skill = cat.skills.find(s => s.id === skillId);
-      if (skill) return skill.name;
-    }
-    return skillId;
+    return skillMap.get(skillId) || skillId;
   };
 
   return (
