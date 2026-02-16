@@ -1,23 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { SKILL_CATEGORIES } from '../data/skills';
+
+// Optimization: Pre-compute skill name lookup map for O(1) access
+// This prevents O(N*M) lookups during rendering
+const SKILL_ID_TO_NAME = {};
+SKILL_CATEGORIES.forEach(cat => {
+  cat.skills.forEach(skill => {
+    SKILL_ID_TO_NAME[skill.id] = skill.name;
+  });
+});
 
 const SkillSelector = ({ selectedSkills, onSkillsChange }) => {
   const [expandedCategory, setExpandedCategory] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
 
-  const toggleCategory = (categoryId) => {
-    setExpandedCategory(expandedCategory === categoryId ? null : categoryId);
-  };
+  const toggleCategory = useCallback((categoryId) => {
+    setExpandedCategory(prev => prev === categoryId ? null : categoryId);
+  }, []);
 
-  const toggleSkill = (skillId) => {
+  const toggleSkill = useCallback((skillId) => {
     if (selectedSkills.includes(skillId)) {
       onSkillsChange(selectedSkills.filter(id => id !== skillId));
     } else {
       onSkillsChange([...selectedSkills, skillId]);
     }
-  };
+  }, [selectedSkills, onSkillsChange]);
 
-  const selectAllInCategory = (categoryId) => {
+  const selectAllInCategory = useCallback((categoryId) => {
     const category = SKILL_CATEGORIES.find(c => c.id === categoryId);
     if (!category) return;
     const categorySkillIds = category.skills.map(s => s.id);
@@ -29,24 +38,23 @@ const SkillSelector = ({ selectedSkills, onSkillsChange }) => {
       const newSkills = [...new Set([...selectedSkills, ...categorySkillIds])];
       onSkillsChange(newSkills);
     }
-  };
+  }, [selectedSkills, onSkillsChange]);
 
-  const filteredCategories = searchTerm
-    ? SKILL_CATEGORIES.map(cat => ({
-        ...cat,
-        skills: cat.skills.filter(skill =>
-          skill.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          skill.description.toLowerCase().includes(searchTerm.toLowerCase())
-        )
-      })).filter(cat => cat.skills.length > 0)
-    : SKILL_CATEGORIES;
+  // Optimization: Memoize filtered categories to avoid re-computation on every render
+  const filteredCategories = useMemo(() => {
+    if (!searchTerm) return SKILL_CATEGORIES;
+
+    return SKILL_CATEGORIES.map(cat => ({
+      ...cat,
+      skills: cat.skills.filter(skill =>
+        skill.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        skill.description.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    })).filter(cat => cat.skills.length > 0);
+  }, [searchTerm]);
 
   const getSkillName = (skillId) => {
-    for (const cat of SKILL_CATEGORIES) {
-      const skill = cat.skills.find(s => s.id === skillId);
-      if (skill) return skill.name;
-    }
-    return skillId;
+    return SKILL_ID_TO_NAME[skillId] || skillId;
   };
 
   return (
