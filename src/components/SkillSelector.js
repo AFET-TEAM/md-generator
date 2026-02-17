@@ -14,19 +14,19 @@ const SkillSelector = ({ selectedSkills, onSkillsChange }) => {
   const [expandedCategory, setExpandedCategory] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
 
-  const toggleCategory = (categoryId) => {
-    setExpandedCategory(expandedCategory === categoryId ? null : categoryId);
-  };
+  const toggleCategory = useCallback((categoryId) => {
+    setExpandedCategory(prev => prev === categoryId ? null : categoryId);
+  }, []);
 
-  const toggleSkill = (skillId) => {
+  const toggleSkill = useCallback((skillId) => {
     if (selectedSkills.includes(skillId)) {
       onSkillsChange(selectedSkills.filter(id => id !== skillId));
     } else {
       onSkillsChange([...selectedSkills, skillId]);
     }
-  };
+  }, [selectedSkills, onSkillsChange]);
 
-  const selectAllInCategory = (categoryId) => {
+  const selectAllInCategory = useCallback((categoryId) => {
     const category = SKILL_CATEGORIES.find(c => c.id === categoryId);
     if (!category) return;
     const categorySkillIds = category.skills.map(s => s.id);
@@ -38,7 +38,11 @@ const SkillSelector = ({ selectedSkills, onSkillsChange }) => {
       const newSkills = [...new Set([...selectedSkills, ...categorySkillIds])];
       onSkillsChange(newSkills);
     }
-  };
+  }, [selectedSkills, onSkillsChange]);
+
+  // Optimization: Memoize filtered categories to avoid re-computation on every render
+  const filteredCategories = useMemo(() => {
+    if (!searchTerm) return SKILL_CATEGORIES;
 
   // Performance Optimization: Memoize filtered results
   // Only recalculate when searchTerm changes, not when expanding/collapsing categories
