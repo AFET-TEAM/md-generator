@@ -1,12 +1,12 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo } from 'react';
 import { SKILL_CATEGORIES } from '../data/skills';
 
-// Optimization: Pre-compute skill name lookup map for O(1) access
-// This prevents O(N*M) lookups during rendering
-const SKILL_ID_TO_NAME = {};
+// Performance Optimization: Pre-compute skill name lookup map
+// This avoids O(N*M) nested loop searches during render
+const SKILL_NAME_MAP = {};
 SKILL_CATEGORIES.forEach(cat => {
   cat.skills.forEach(skill => {
-    SKILL_ID_TO_NAME[skill.id] = skill.name;
+    SKILL_NAME_MAP[skill.id] = skill.name;
   });
 });
 
@@ -44,17 +44,22 @@ const SkillSelector = ({ selectedSkills, onSkillsChange }) => {
   const filteredCategories = useMemo(() => {
     if (!searchTerm) return SKILL_CATEGORIES;
 
-    return SKILL_CATEGORIES.map(cat => ({
-      ...cat,
-      skills: cat.skills.filter(skill =>
-        skill.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        skill.description.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    })).filter(cat => cat.skills.length > 0);
+  // Performance Optimization: Memoize filtered results
+  // Only recalculate when searchTerm changes, not when expanding/collapsing categories
+  const filteredCategories = useMemo(() => {
+    return searchTerm
+      ? SKILL_CATEGORIES.map(cat => ({
+          ...cat,
+          skills: cat.skills.filter(skill =>
+            skill.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            skill.description.toLowerCase().includes(searchTerm.toLowerCase())
+          )
+        })).filter(cat => cat.skills.length > 0)
+      : SKILL_CATEGORIES;
   }, [searchTerm]);
 
   const getSkillName = (skillId) => {
-    return SKILL_ID_TO_NAME[skillId] || skillId;
+    return SKILL_NAME_MAP[skillId] || skillId;
   };
 
   return (
