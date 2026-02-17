@@ -1,12 +1,12 @@
 import React, { useState, useMemo } from 'react';
 import { SKILL_CATEGORIES } from '../data/skills';
 
-// Optimization: Create a map for O(1) skill name lookup at module level
-// This runs once when the module loads, not on every component mount
-const skillMap = new Map();
+// Performance Optimization: Pre-compute skill name lookup map
+// This avoids O(N*M) nested loop searches during render
+const SKILL_NAME_MAP = {};
 SKILL_CATEGORIES.forEach(cat => {
   cat.skills.forEach(skill => {
-    skillMap.set(skill.id, skill.name);
+    SKILL_NAME_MAP[skill.id] = skill.name;
   });
 });
 
@@ -40,7 +40,8 @@ const SkillSelector = ({ selectedSkills, onSkillsChange }) => {
     }
   };
 
-  // Optimization: Memoize filteredCategories to avoid expensive filtering on every render
+  // Performance Optimization: Memoize filtered results
+  // Only recalculate when searchTerm changes, not when expanding/collapsing categories
   const filteredCategories = useMemo(() => {
     return searchTerm
       ? SKILL_CATEGORIES.map(cat => ({
@@ -54,7 +55,7 @@ const SkillSelector = ({ selectedSkills, onSkillsChange }) => {
   }, [searchTerm]);
 
   const getSkillName = (skillId) => {
-    return skillMap.get(skillId) || skillId;
+    return SKILL_NAME_MAP[skillId] || skillId;
   };
 
   return (
