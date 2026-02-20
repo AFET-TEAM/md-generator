@@ -143,6 +143,6 @@ const AgentCard = ({ agent, onUpdate, onRemove, index }) => {
       )}
     </div>
   );
-});
+};
 
 export default React.memo(AgentCard);
