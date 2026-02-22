@@ -42,10 +42,7 @@ const SkillSelector = ({ selectedSkills, onSkillsChange }) => {
       const newSkills = [...new Set([...selectedSkills, ...categorySkillIds])];
       onSkillsChange(newSkills);
     }
-  }, [selectedSkills, onSkillsChange]);
-
-  // Performance Optimization: Use Set for O(1) lookups instead of Array.includes O(N)
-  const selectedSkillsSet = useMemo(() => new Set(selectedSkills), [selectedSkills]);
+  }, [selectedSkills, onSkillsChange, selectedSkillsSet]);
 
   // Performance Optimization: Memoize filtered results
   // Only recalculate when searchTerm changes, not when expanding/collapsing categories
@@ -101,8 +98,8 @@ const SkillSelector = ({ selectedSkills, onSkillsChange }) => {
 
       <div className="skill-categories">
         {filteredCategories.map(category => {
-          const categorySkillIds = category.skills.map(s => s.id);
-          const selectedInCategory = categorySkillIds.filter(id => selectedSkillsSet.has(id)).length;
+          const selectedInCategory = category.skills.reduce((count, skill) =>
+            selectedSkillsSet.has(skill.id) ? count + 1 : count, 0);
           const isExpanded = expandedCategory === category.id || searchTerm.length > 0;
 
           return (
