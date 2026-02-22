@@ -50,15 +50,17 @@ const SkillSelector = ({ selectedSkills, onSkillsChange }) => {
   // Performance Optimization: Memoize filtered results
   // Only recalculate when searchTerm changes, not when expanding/collapsing categories
   const filteredCategories = useMemo(() => {
-    return searchTerm
-      ? SKILL_CATEGORIES.map(cat => ({
-          ...cat,
-          skills: cat.skills.filter(skill =>
-            skill.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            skill.description.toLowerCase().includes(searchTerm.toLowerCase())
-          )
-        })).filter(cat => cat.skills.length > 0)
-      : SKILL_CATEGORIES;
+    if (!searchTerm) {
+      return SKILL_CATEGORIES;
+    }
+
+    return SKILL_CATEGORIES.map(cat => ({
+      ...cat,
+      skills: cat.skills.filter(skill =>
+        skill.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        skill.description.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    })).filter(cat => cat.skills.length > 0);
   }, [searchTerm]);
 
   const getSkillName = (skillId) => {
