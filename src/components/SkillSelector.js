@@ -14,23 +14,27 @@ const SkillSelector = ({ selectedSkills, onSkillsChange }) => {
   const [expandedCategory, setExpandedCategory] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
 
+  // Performance Optimization: Use Set for O(1) lookup of selected skills
+  // This reduces complexity from O(N*M) to O(N + M) during render
+  const selectedSkillsSet = useMemo(() => new Set(selectedSkills), [selectedSkills]);
+
   const toggleCategory = useCallback((categoryId) => {
     setExpandedCategory(prev => prev === categoryId ? null : categoryId);
   }, []);
 
   const toggleSkill = useCallback((skillId) => {
-    if (selectedSkills.includes(skillId)) {
+    if (selectedSkillsSet.has(skillId)) {
       onSkillsChange(selectedSkills.filter(id => id !== skillId));
     } else {
       onSkillsChange([...selectedSkills, skillId]);
     }
-  }, [selectedSkills, onSkillsChange]);
+  }, [selectedSkills, selectedSkillsSet, onSkillsChange]);
 
   const selectAllInCategory = useCallback((categoryId) => {
     const category = SKILL_CATEGORIES.find(c => c.id === categoryId);
     if (!category) return;
     const categorySkillIds = category.skills.map(s => s.id);
-    const allSelected = categorySkillIds.every(id => selectedSkills.includes(id));
+    const allSelected = categorySkillIds.every(id => selectedSkillsSet.has(id));
 
     if (allSelected) {
       onSkillsChange(selectedSkills.filter(id => !categorySkillIds.includes(id)));
