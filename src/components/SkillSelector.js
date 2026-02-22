@@ -42,7 +42,10 @@ const SkillSelector = ({ selectedSkills, onSkillsChange }) => {
       const newSkills = [...new Set([...selectedSkills, ...categorySkillIds])];
       onSkillsChange(newSkills);
     }
-  }, [selectedSkills, selectedSkillsSet, onSkillsChange]);
+  }, [selectedSkills, onSkillsChange]);
+
+  // Performance Optimization: Use Set for O(1) lookups instead of Array.includes O(N)
+  const selectedSkillsSet = useMemo(() => new Set(selectedSkills), [selectedSkills]);
 
   // Performance Optimization: Memoize filtered results
   // Only recalculate when searchTerm changes, not when expanding/collapsing categories
