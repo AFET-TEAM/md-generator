@@ -4,9 +4,12 @@ import { SKILL_CATEGORIES } from '../data/skills';
 // Performance Optimization: Pre-compute skill name lookup map
 // This avoids O(N*M) nested loop searches during render
 const SKILL_NAME_MAP = {};
+const SKILL_ID_TO_CATEGORY_ID_MAP = {};
+
 SKILL_CATEGORIES.forEach(cat => {
   cat.skills.forEach(skill => {
     SKILL_NAME_MAP[skill.id] = skill.name;
+    SKILL_ID_TO_CATEGORY_ID_MAP[skill.id] = cat.id;
   });
 });
 
@@ -60,6 +63,34 @@ const SkillSelector = ({ selectedSkills, onSkillsChange }) => {
     })).filter(cat => cat.skills.length > 0);
   }, [searchTerm]);
 
+  // Performance Optimization: Pre-calculate category counts
+  // When no search is active, this is O(SelectedSkills) instead of O(TotalSkills)
+  const categoryCounts = useMemo(() => {
+    const counts = {};
+
+    // Initialize counts
+    SKILL_CATEGORIES.forEach(c => counts[c.id] = 0);
+
+    if (searchTerm) {
+      // Fallback for search: count only visible skills
+      filteredCategories.forEach(cat => {
+        counts[cat.id] = cat.skills.reduce((acc, skill) =>
+          selectedSkillsSet.has(skill.id) ? acc + 1 : acc, 0
+        );
+      });
+    } else {
+      // Optimized path: iterate only selected skills
+      // This is O(M) where M is selected skills count, vs O(N) total skills
+      selectedSkills.forEach(skillId => {
+        const catId = SKILL_ID_TO_CATEGORY_ID_MAP[skillId];
+        if (catId && counts[catId] !== undefined) {
+          counts[catId]++;
+        }
+      });
+    }
+    return counts;
+  }, [selectedSkills, searchTerm, filteredCategories, selectedSkillsSet]);
+
   const getSkillName = (skillId) => {
     return SKILL_NAME_MAP[skillId] || skillId;
   };
@@ -80,7 +111,7 @@ const SkillSelector = ({ selectedSkills, onSkillsChange }) => {
         <div className="selected-skills-summary">
           <span className="selected-count">{selectedSkills.length} skill secili</span>
           <div className="selected-skill-tags">
-            {selectedSkills.map(skillId => (
+            {selectedSkills.slice(0, 20).map(skillId => (
               <span key={skillId} className="skill-tag">
                 {getSkillName(skillId)}
                 <button
@@ -92,14 +123,16 @@ const SkillSelector = ({ selectedSkills, onSkillsChange }) => {
                 </button>
               </span>
             ))}
+            {selectedSkills.length > 20 && (
+              <span className="skill-tag-more">+{selectedSkills.length - 20} daha...</span>
+            )}
           </div>
         </div>
       )}
 
       <div className="skill-categories">
         {filteredCategories.map(category => {
-          const selectedInCategory = category.skills.reduce((count, skill) =>
-            selectedSkillsSet.has(skill.id) ? count + 1 : count, 0);
+          const selectedInCategory = categoryCounts[category.id] || 0;
           const isExpanded = expandedCategory === category.id || searchTerm.length > 0;
 
           return (
