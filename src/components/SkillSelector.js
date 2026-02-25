@@ -60,6 +60,16 @@ const SkillSelector = ({ selectedSkills, onSkillsChange }) => {
     })).filter(cat => cat.skills.length > 0);
   }, [searchTerm]);
 
+  // Performance Optimization: Pre-calculate counts to avoid O(N) reduce in render loop
+  const categoryCounts = useMemo(() => {
+    const counts = {};
+    filteredCategories.forEach(cat => {
+      counts[cat.id] = cat.skills.reduce((count, skill) =>
+        selectedSkillsSet.has(skill.id) ? count + 1 : count, 0);
+    });
+    return counts;
+  }, [filteredCategories, selectedSkillsSet]);
+
   const getSkillName = (skillId) => {
     return SKILL_NAME_MAP[skillId] || skillId;
   };
@@ -98,8 +108,7 @@ const SkillSelector = ({ selectedSkills, onSkillsChange }) => {
 
       <div className="skill-categories">
         {filteredCategories.map(category => {
-          const selectedInCategory = category.skills.reduce((count, skill) =>
-            selectedSkillsSet.has(skill.id) ? count + 1 : count, 0);
+          const selectedInCategory = categoryCounts[category.id] || 0;
           const isExpanded = expandedCategory === category.id || searchTerm.length > 0;
 
           return (
