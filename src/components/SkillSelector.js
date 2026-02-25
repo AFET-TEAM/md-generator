@@ -60,6 +60,22 @@ const SkillSelector = ({ selectedSkills, onSkillsChange }) => {
     })).filter(cat => cat.skills.length > 0);
   }, [searchTerm]);
 
+  // Performance Optimization: Pre-calculate counts to avoid O(N*M) loop in render
+  // This ensures expand/collapse actions (which re-render the component) are O(1)
+  const categoryCounts = useMemo(() => {
+    const counts = {};
+    filteredCategories.forEach(category => {
+      let count = 0;
+      for (const skill of category.skills) {
+        if (selectedSkillsSet.has(skill.id)) {
+          count++;
+        }
+      }
+      counts[category.id] = count;
+    });
+    return counts;
+  }, [filteredCategories, selectedSkillsSet]);
+
   const getSkillName = (skillId) => {
     return SKILL_NAME_MAP[skillId] || skillId;
   };
@@ -98,8 +114,7 @@ const SkillSelector = ({ selectedSkills, onSkillsChange }) => {
 
       <div className="skill-categories">
         {filteredCategories.map(category => {
-          const selectedInCategory = category.skills.reduce((count, skill) =>
-            selectedSkillsSet.has(skill.id) ? count + 1 : count, 0);
+          const selectedInCategory = categoryCounts[category.id] || 0;
           const isExpanded = expandedCategory === category.id || searchTerm.length > 0;
 
           return (
