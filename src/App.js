@@ -3,6 +3,7 @@ import axios from 'axios';
 import ProjectForm from './components/ProjectForm';
 import RulesetDisplay from './components/RulesetDisplay';
 import LoadingSpinner from './components/LoadingSpinner';
+import ChunkErrorBoundary from './components/ChunkErrorBoundary';
 import API_BASE_URL from './config/api';
 import './App.css';
 
@@ -167,18 +168,20 @@ function App() {
             )}
 
             {projectDataForAgents && !loading && (
-              <Suspense fallback={
-                <LoadingSpinner
-                  title="Multi-Agent Modu Yukleniyor..."
-                  message="Gerekli bilesenler hazirlaniyor."
-                  subMessage="Lutfen bekleyiniz."
-                />
-              }>
-                <MultiAgentConfigurator
-                  projectData={projectDataForAgents}
-                  onBack={() => setProjectDataForAgents(null)}
-                />
-              </Suspense>
+              <ChunkErrorBoundary>
+                <Suspense fallback={
+                  <LoadingSpinner
+                    title="Multi-Agent Modu Yukleniyor..."
+                    message="Gerekli bilesenler hazirlaniyor."
+                    subMessage="Lutfen bekleyiniz."
+                  />
+                }>
+                  <MultiAgentConfigurator
+                    projectData={projectDataForAgents}
+                    onBack={() => setProjectDataForAgents(null)}
+                  />
+                </Suspense>
+              </ChunkErrorBoundary>
             )}
           </>
         )}
