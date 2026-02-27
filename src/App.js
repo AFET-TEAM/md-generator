@@ -1,11 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import axios from 'axios';
 import ProjectForm from './components/ProjectForm';
 import RulesetDisplay from './components/RulesetDisplay';
-import MultiAgentConfigurator from './components/MultiAgentConfigurator';
 import LoadingSpinner from './components/LoadingSpinner';
+import ChunkErrorBoundary from './components/ChunkErrorBoundary';
 import API_BASE_URL from './config/api';
 import './App.css';
+
+// Lazy load MultiAgentConfigurator
+const MultiAgentConfigurator = lazy(() => import('./components/MultiAgentConfigurator'));
 
 function App() {
   const [ruleset, setRuleset] = useState(null);
@@ -165,10 +168,20 @@ function App() {
             )}
 
             {projectDataForAgents && !loading && (
-              <MultiAgentConfigurator
-                projectData={projectDataForAgents}
-                onBack={() => setProjectDataForAgents(null)}
-              />
+              <ChunkErrorBoundary>
+                <Suspense fallback={
+                  <LoadingSpinner
+                    title="Multi-Agent Modu Yukleniyor..."
+                    message="Gerekli bilesenler hazirlaniyor."
+                    subMessage="Lutfen bekleyiniz."
+                  />
+                }>
+                  <MultiAgentConfigurator
+                    projectData={projectDataForAgents}
+                    onBack={() => setProjectDataForAgents(null)}
+                  />
+                </Suspense>
+              </ChunkErrorBoundary>
             )}
           </>
         )}
