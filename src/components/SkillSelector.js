@@ -54,11 +54,15 @@ const SkillSelector = ({ selectedSkills, onSkillsChange }) => {
       return SKILL_CATEGORIES;
     }
 
+    // Performance Optimization: Hoist searchTerm.toLowerCase() outside the nested loops
+    // This prevents recalculating the same string transformation O(N*M) times during render
+    const lowerSearchTerm = searchTerm.toLowerCase();
+
     return SKILL_CATEGORIES.map(cat => ({
       ...cat,
       skills: cat.skills.filter(skill =>
-        skill.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        skill.description.toLowerCase().includes(searchTerm.toLowerCase())
+        skill.name.toLowerCase().includes(lowerSearchTerm) ||
+        skill.description.toLowerCase().includes(lowerSearchTerm)
       )
     })).filter(cat => cat.skills.length > 0);
   }, [searchTerm]);
