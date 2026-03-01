@@ -58,13 +58,24 @@ const SkillSelector = ({ selectedSkills, onSkillsChange }) => {
     // This prevents recalculating the same string transformation O(N*M) times during render
     const lowerSearchTerm = searchTerm.toLowerCase();
 
-    return SKILL_CATEGORIES.map(cat => ({
-      ...cat,
-      skills: cat.skills.filter(skill =>
-        skill.name.toLowerCase().includes(lowerSearchTerm) ||
-        skill.description.toLowerCase().includes(lowerSearchTerm)
-      )
-    })).filter(cat => cat.skills.length > 0);
+    // Performance Optimization: Replace map/filter with traditional for loops
+    // Eliminates intermediate array allocations and reduces function call overhead
+    const result = [];
+    for (let i = 0; i < SKILL_CATEGORIES.length; i++) {
+      const cat = SKILL_CATEGORIES[i];
+      const matchedSkills = [];
+      for (let j = 0; j < cat.skills.length; j++) {
+        const skill = cat.skills[j];
+        if (skill.name.toLowerCase().includes(lowerSearchTerm) ||
+            skill.description.toLowerCase().includes(lowerSearchTerm)) {
+          matchedSkills.push(skill);
+        }
+      }
+      if (matchedSkills.length > 0) {
+        result.push({ ...cat, skills: matchedSkills });
+      }
+    }
+    return result;
   }, [searchTerm]);
 
   // Performance Optimization: Pre-calculate category counts
@@ -73,24 +84,33 @@ const SkillSelector = ({ selectedSkills, onSkillsChange }) => {
     const counts = {};
 
     // Initialize counts
-    SKILL_CATEGORIES.forEach(c => counts[c.id] = 0);
+    for (let i = 0; i < SKILL_CATEGORIES.length; i++) {
+      counts[SKILL_CATEGORIES[i].id] = 0;
+    }
 
     if (searchTerm) {
       // Fallback for search: count only visible skills
-      filteredCategories.forEach(cat => {
-        counts[cat.id] = cat.skills.reduce((acc, skill) =>
-          selectedSkillsSet.has(skill.id) ? acc + 1 : acc, 0
-        );
-      });
+      // Performance Optimization: Replace forEach/reduce with traditional for loops
+      for (let i = 0; i < filteredCategories.length; i++) {
+        const cat = filteredCategories[i];
+        let count = 0;
+        for (let j = 0; j < cat.skills.length; j++) {
+          if (selectedSkillsSet.has(cat.skills[j].id)) {
+            count++;
+          }
+        }
+        counts[cat.id] = count;
+      }
     } else {
       // Optimized path: iterate only selected skills
       // This is O(M) where M is selected skills count, vs O(N) total skills
-      selectedSkills.forEach(skillId => {
+      for (let i = 0; i < selectedSkills.length; i++) {
+        const skillId = selectedSkills[i];
         const catId = SKILL_ID_TO_CATEGORY_ID_MAP[skillId];
         if (catId && counts[catId] !== undefined) {
           counts[catId]++;
         }
-      });
+      }
     }
     return counts;
   }, [selectedSkills, searchTerm, filteredCategories, selectedSkillsSet]);

@@ -3,3 +3,6 @@
 **Action:** Always hoist static derivations (e.g., `searchTerm.toLowerCase()`) outside of nested iteration boundaries in hooks like `useMemo` to ensure they execute only once per recalculation.
 **Learning:** Found redundant string allocation and `toLowerCase` computation inside nested `.map` and `.filter` loops in `SkillSelector.js`. The search term was being lowercased for every single skill, resulting in O(N*M) redundant operations.
 **Action:** Extract `searchTerm.toLowerCase()` into a constant outside the loops. Measured a performance improvement in benchmarks for iterating over large skill lists. Always hoist constant computations outside of inner loops.
+## 2025-02-12 - Replacing high-order array functions with traditional for loops
+**Learning:** In performance-critical hot paths and frequently updated React components (like the list rendering in `SkillSelector`), chaining high-order array functions like `.map()`, `.filter()`, `.forEach()`, and `.reduce()` can result in intermediate array allocations and significant function call overhead, impacting render performance and responsiveness.
+**Action:** Replace chained high-order array functions with traditional `for` loops within hooks like `useMemo` to eliminate intermediate allocations, reduce function call overhead, and speed up O(N*M) computations.
