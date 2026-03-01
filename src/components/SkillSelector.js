@@ -55,7 +55,7 @@ const SkillSelector = ({ selectedSkills, onSkillsChange }) => {
     }
 
     // Performance Optimization: Hoist searchTerm.toLowerCase() outside the nested loops
-    // to prevent redundant string allocation and toLowerCase computation for every skill.
+    // This prevents recalculating the same string transformation O(N*M) times during render
     const lowerSearchTerm = searchTerm.toLowerCase();
 
     return SKILL_CATEGORIES.map(cat => ({
