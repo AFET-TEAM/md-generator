@@ -1,8 +1,6 @@
-## 2024-05-24 - Optimization of SkillSelector Filtering
-**Learning:** Performing string transformations like `.toLowerCase()` inside nested React `filter` / `map` loops is an O(N*M) anti-pattern that can severely impact the responsiveness of UI components with typing interactions (like a search bar).
-**Action:** Always hoist static derivations (e.g., `searchTerm.toLowerCase()`) outside of nested iteration boundaries in hooks like `useMemo` to ensure they execute only once per recalculation.
-**Learning:** Found redundant string allocation and `toLowerCase` computation inside nested `.map` and `.filter` loops in `SkillSelector.js`. The search term was being lowercased for every single skill, resulting in O(N*M) redundant operations.
-**Action:** Extract `searchTerm.toLowerCase()` into a constant outside the loops. Measured a performance improvement in benchmarks for iterating over large skill lists. Always hoist constant computations outside of inner loops.
-## 2025-02-12 - Replacing high-order array functions with traditional for loops
-**Learning:** In performance-critical hot paths and frequently updated React components (like the list rendering in `SkillSelector`), chaining high-order array functions like `.map()`, `.filter()`, `.forEach()`, and `.reduce()` can result in intermediate array allocations and significant function call overhead, impacting render performance and responsiveness.
-**Action:** Replace chained high-order array functions with traditional `for` loops within hooks like `useMemo` to eliminate intermediate allocations, reduce function call overhead, and speed up O(N*M) computations.
+## 2025-01-26 - Pre-compute Search Strings to Avoid Repeated String Allocations
+**Learning:** In React list-filtering loops (like in `SkillSelector`), calling `.toLowerCase()` inside the loop on properties of every list item (especially when combining strings like name + description) causes significant overhead via repeated allocations and string operations on every keystroke.
+**Action:** Pre-compute and store these search strings in a module-level dictionary when the static data is loaded. Use this map in the filter loop. This optimization converted `O(N*M)` string allocations during render to `O(1)`.
+## 2025-01-26 - Pre-compute Search Strings to Avoid Repeated String Allocations
+**Learning:** In React list-filtering loops (like in `SkillSelector`), calling `.toLowerCase()` inside the loop on properties of every list item (especially when combining strings like name + description) causes significant overhead via repeated allocations and string operations on every keystroke.
+**Action:** Pre-compute and store these search strings in a module-level dictionary when the static data is loaded. Use this map in the filter loop. This optimization converted `O(N*M)` string allocations during render to `O(1)`.
