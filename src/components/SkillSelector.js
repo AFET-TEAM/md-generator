@@ -5,11 +5,18 @@ import { SKILL_CATEGORIES } from '../data/skills';
 // This avoids O(N*M) nested loop searches during render
 const SKILL_NAME_MAP = {};
 const SKILL_ID_TO_CATEGORY_ID_MAP = {};
+// Performance Optimization: Pre-compute search terms to avoid
+// O(N*M) toLowerCase() calls during render for each keystroke
+const SKILL_SEARCH_TERMS_MAP = {};
 
 SKILL_CATEGORIES.forEach(cat => {
   cat.skills.forEach(skill => {
     SKILL_NAME_MAP[skill.id] = skill.name;
     SKILL_ID_TO_CATEGORY_ID_MAP[skill.id] = cat.id;
+    SKILL_SEARCH_TERMS_MAP[skill.id] = {
+      nameLower: skill.name.toLowerCase(),
+      descLower: skill.description.toLowerCase(),
+    };
   });
 });
 
@@ -66,8 +73,9 @@ const SkillSelector = ({ selectedSkills, onSkillsChange }) => {
       const matchedSkills = [];
       for (let j = 0; j < cat.skills.length; j++) {
         const skill = cat.skills[j];
-        if (skill.name.toLowerCase().includes(lowerSearchTerm) ||
-            skill.description.toLowerCase().includes(lowerSearchTerm)) {
+        const searchTerms = SKILL_SEARCH_TERMS_MAP[skill.id];
+        if (searchTerms.nameLower.includes(lowerSearchTerm) ||
+            searchTerms.descLower.includes(lowerSearchTerm)) {
           matchedSkills.push(skill);
         }
       }
