@@ -53,11 +53,13 @@ function App() {
     }
   };
 
-  const handleReset = () => {
+  // Performance Optimization: useCallback ensures the function reference remains stable
+  // This prevents the React.memo in RulesetDisplay and ConfigFileManager from being busted.
+  const handleReset = React.useCallback(() => {
     setRuleset(null);
     setError(null);
     setProjectDataForAgents(null);
-  };
+  }, []);
 
   const handleModeChange = (mode) => {
     setActiveMode(mode);
