@@ -126,4 +126,6 @@ const RulesetDisplay = ({ ruleset, onReset }) => {
   );
 };
 
-export default RulesetDisplay;
+export default React.memo(RulesetDisplay);
+// Performance Optimization: Wrapped in React.memo to prevent unnecessary
+// re-renders of expensive ReactMarkdown and JSON views when parent re-renders
