@@ -8,8 +8,11 @@ const SKILL_ID_TO_CATEGORY_ID_MAP = {};
 // Performance Optimization: Pre-compute search terms to avoid
 // O(N*M) toLowerCase() calls during render for each keystroke
 const SKILL_SEARCH_TERMS_MAP = {};
+// Performance Optimization: Pre-compute category lookup map to avoid O(N) finds
+const CATEGORY_MAP = {};
 
 SKILL_CATEGORIES.forEach(cat => {
+  CATEGORY_MAP[cat.id] = cat;
   cat.skills.forEach(skill => {
     SKILL_NAME_MAP[skill.id] = skill.name;
     SKILL_ID_TO_CATEGORY_ID_MAP[skill.id] = cat.id;
@@ -41,15 +44,36 @@ const SkillSelector = ({ selectedSkills, onSkillsChange }) => {
   }, [selectedSkills, selectedSkillsSet, onSkillsChange]);
 
   const selectAllInCategory = useCallback((categoryId) => {
-    const category = SKILL_CATEGORIES.find(c => c.id === categoryId);
+    const category = CATEGORY_MAP[categoryId];
     if (!category) return;
-    const categorySkillIds = category.skills.map(s => s.id);
-    const allSelected = categorySkillIds.every(id => selectedSkillsSet.has(id));
+
+    // Performance Optimization: Use for loop instead of map().every()
+    // This avoids intermediate array allocation and stops early if a skill is not selected.
+    let allSelected = true;
+    for (let i = 0; i < category.skills.length; i++) {
+      if (!selectedSkillsSet.has(category.skills[i].id)) {
+        allSelected = false;
+        break;
+      }
+    }
 
     if (allSelected) {
-      onSkillsChange(selectedSkills.filter(id => !categorySkillIds.includes(id)));
+      // Performance Optimization: Use Set for O(1) lookups during filter instead of .includes() O(N)
+      // This changes removal from O(Selected * CategorySkills) to O(Selected + CategorySkills)
+      const categorySkillIdsSet = new Set();
+      for (let i = 0; i < category.skills.length; i++) {
+        categorySkillIdsSet.add(category.skills[i].id);
+      }
+      onSkillsChange(selectedSkills.filter(id => !categorySkillIdsSet.has(id)));
     } else {
-      const newSkills = [...new Set([...selectedSkills, ...categorySkillIds])];
+      // Performance Optimization: Append only unselected skills to avoid large Set allocation
+      const newSkills = [...selectedSkills];
+      for (let i = 0; i < category.skills.length; i++) {
+        const skillId = category.skills[i].id;
+        if (!selectedSkillsSet.has(skillId)) {
+          newSkills.push(skillId);
+        }
+      }
       onSkillsChange(newSkills);
     }
   }, [selectedSkills, onSkillsChange, selectedSkillsSet]);
