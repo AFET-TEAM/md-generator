@@ -9,3 +9,7 @@
 ## 2025-01-26 - Prevent Re-renders of Expensive Markdown and JSON Output Views
 **Learning:** Large strings like combined Markdown files or fully serialized JSON strings being rendered through a parser (like `ReactMarkdown` or highlighted `<pre>`) can cause severe UI lag if they are re-rendered frequently on unrelated state updates from a parent component (like `App.js` changing tabs or handling a global error).
 **Action:** Wrap the output display components (`RulesetDisplay`) in `React.memo` and ensure that the parent passes strictly stable functions via `useCallback` (e.g., `handleReset` in `App.js`). This isolates the expensive render tree completely.
+
+## 2025-01-26 - Test Component Memoization Fix
+**Learning:** When writing tests to verify `React.memo` behavior, defining mock prop objects inside the wrapper component's render scope creates new references on every render, causing the memoization test to incorrectly fail.
+**Action:** Move mock object props (like `ruleset` data) outside of the wrapper component so they maintain stable references across re-renders.

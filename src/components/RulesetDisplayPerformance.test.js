@@ -11,13 +11,14 @@ jest.mock('react-markdown', () => {
   };
 });
 
+const rulesetData = {
+  markdown: '# Test',
+  json_data: { test: true }
+};
+
 // A wrapper component to simulate App.js re-rendering
 const TestApp = () => {
   const [count, setCount] = useState(0);
-  const ruleset = {
-    markdown: '# Test',
-    json_data: { test: true }
-  };
 
   // Use stable reference for onReset to match what we did in App.js
   const handleReset = React.useCallback(() => {}, []);
@@ -25,7 +26,7 @@ const TestApp = () => {
   return (
     <div>
       <button onClick={() => setCount(c => c + 1)}>Increment</button>
-      <RulesetDisplay ruleset={ruleset} onReset={handleReset} />
+      <RulesetDisplay ruleset={rulesetData} onReset={handleReset} />
     </div>
   );
 };
