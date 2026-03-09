@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import RulesetDisplay from './RulesetDisplay';
+import ConfigFileManager from './ConfigFileManager';
 
 // Mock ReactMarkdown to track renders
 const MockMarkdown = jest.fn((props) => <div data-testid="react-markdown">Markdown</div>);
@@ -11,19 +11,17 @@ jest.mock('react-markdown', () => {
   };
 });
 
-const rulesetData = {
-  markdown: '# Test',
-  json_data: { test: true }
-};
-
 // A wrapper component to simulate App.js re-rendering
 const TestApp = () => {
   const [count, setCount] = useState(0);
-  // Need to memoize ruleset, otherwise a new object is created on each render,
-  // defeating React.memo on RulesetDisplay
-  const ruleset = useMemo(() => ({
-    markdown: '# Test',
-    json_data: { test: true }
+  // Need to memoize props, otherwise creating a new object on each render
+  // will cause React.memo to always fail
+  const configs = useMemo(() => ({
+    'test': {
+      filename: 'test.md',
+      content: '# Test',
+      format: 'markdown'
+    }
   }), []);
 
   // Use stable reference for onReset to match what we did in App.js
@@ -32,17 +30,17 @@ const TestApp = () => {
   return (
     <div>
       <button onClick={() => setCount(c => c + 1)}>Increment</button>
-      <RulesetDisplay ruleset={rulesetData} onReset={handleReset} />
+      <ConfigFileManager configs={configs} onReset={handleReset} />
     </div>
   );
 };
 
-describe('RulesetDisplay Performance', () => {
+describe('ConfigFileManager Performance', () => {
   beforeEach(() => {
     MockMarkdown.mockClear();
   });
 
-  test('RulesetDisplay does not re-render when parent state changes', () => {
+  test('ConfigFileManager does not re-render when parent state changes', () => {
     render(<TestApp />);
 
     // Initial render
@@ -53,8 +51,8 @@ describe('RulesetDisplay Performance', () => {
     fireEvent.click(button);
     fireEvent.click(button);
 
-    // RulesetDisplay should not have re-rendered because of React.memo
-    // and stable props (ruleset object is the exact same reference, onReset is stable)
+    // ConfigFileManager should not have re-rendered because of React.memo
+    // and stable props (configs object is the exact same reference, onReset is stable)
     expect(MockMarkdown).toHaveBeenCalledTimes(1);
   });
 });

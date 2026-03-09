@@ -1,8 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 
+// Performance Optimization: Wrapped in React.memo to prevent unnecessary
+// re-renders of expensive ReactMarkdown and JSON views when parent re-renders.
+// `Object.entries(configs)` causes issues if configs change, so we will memoize the component correctly.
+
 const ConfigFileManager = ({ configs, onReset }) => {
-  const configEntries = Object.entries(configs);
+  const configEntries = useMemo(() => Object.entries(configs || {}), [configs]);
   const [activeTab, setActiveTab] = useState(configEntries.length > 0 ? configEntries[0][0] : null);
   const [copyStatus, setCopyStatus] = useState({});
 
@@ -24,7 +28,7 @@ const ConfigFileManager = ({ configs, onReset }) => {
   const copyToClipboard = async (configId, content) => {
     try {
       await navigator.clipboard.writeText(content);
-      setCopyStatus({ ...copyStatus, [configId]: true });
+      setCopyStatus(prev => ({ ...prev, [configId]: true }));
       setTimeout(() => {
         setCopyStatus(prev => ({ ...prev, [configId]: false }));
       }, 2000);
@@ -41,7 +45,7 @@ const ConfigFileManager = ({ configs, onReset }) => {
     );
   }
 
-  const activeConfig = configs[activeTab];
+  const activeConfig = configs[activeTab] || configs[configEntries[0][0]];
 
   return (
     <div className="config-file-manager">
@@ -81,9 +85,9 @@ const ConfigFileManager = ({ configs, onReset }) => {
               <button
                 type="button"
                 className="action-btn"
-                onClick={() => copyToClipboard(activeTab, activeConfig.content)}
+                onClick={() => copyToClipboard(activeTab || configEntries[0][0], activeConfig.content)}
               >
-                {copyStatus[activeTab] ? 'Kopyalandi!' : 'Kopyala'}
+                {copyStatus[activeTab || configEntries[0][0]] ? 'Kopyalandi!' : 'Kopyala'}
               </button>
               <button
                 type="button"
@@ -147,4 +151,4 @@ const ConfigFileManager = ({ configs, onReset }) => {
   );
 };
 
-export default ConfigFileManager;
+export default React.memo(ConfigFileManager);
