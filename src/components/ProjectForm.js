@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import API_BASE_URL from '../config/api';
+import SelectField from './SelectField';
 
 const ProjectForm = ({ onSubmit }) => {
   const [formData, setFormData] = useState({
@@ -82,13 +83,15 @@ const ProjectForm = ({ onSubmit }) => {
     loadOptions();
   }, []);
 
-  const handleInputChange = (e) => {
+  // Performance Optimization: Use useCallback to maintain stable reference
+  // so that SelectField components do not re-render unnecessarily.
+  const handleInputChange = useCallback((e) => {
     const { name, value, type, checked } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
-  };
+  }, []);
 
   const handleAddRequirement = () => {
     if (additionalRequirement.trim()) {
@@ -117,111 +120,69 @@ const ProjectForm = ({ onSubmit }) => {
       <h3>🎨 Frontend Ayarları</h3>
       
       <div className="form-grid">
-        <div className="form-group">
-          <label htmlFor="frontend_framework">Frontend Framework *</label>
-          <select
-            id="frontend_framework"
-            name="frontend_framework"
-            value={formData.frontend_framework}
-            onChange={handleInputChange}
-            required
-          >
-            <option value="">Seçiniz...</option>
-            {projectOptions.frontend_options?.frameworks?.map(fw => (
-              <option key={fw} value={fw}>{fw}</option>
-            ))}
-          </select>
-        </div>
+        <SelectField
+          id="frontend_framework"
+          name="frontend_framework"
+          label="Frontend Framework"
+          value={formData.frontend_framework}
+          onChange={handleInputChange}
+          required={true}
+          options={projectOptions.frontend_options?.frameworks}
+        />
 
-        <div className="form-group">
-          <label htmlFor="styling_approach">Stil Yaklaşımı</label>
-          <select
-            id="styling_approach"
-            name="styling_approach"
-            value={formData.styling_approach}
-            onChange={handleInputChange}
-          >
-            <option value="">Seçiniz...</option>
-            {projectOptions.frontend_options?.styling_approaches?.map(style => (
-              <option key={style} value={style}>{style}</option>
-            ))}
-          </select>
-        </div>
+        <SelectField
+          id="styling_approach"
+          name="styling_approach"
+          label="Stil Yaklaşımı"
+          value={formData.styling_approach}
+          onChange={handleInputChange}
+          options={projectOptions.frontend_options?.styling_approaches}
+        />
 
-        <div className="form-group">
-          <label htmlFor="state_management">State Management</label>
-          <select
-            id="state_management"
-            name="state_management"
-            value={formData.state_management}
-            onChange={handleInputChange}
-          >
-            <option value="">Seçiniz...</option>
-            {projectOptions.frontend_options?.state_management?.map(sm => (
-              <option key={sm} value={sm}>{sm}</option>
-            ))}
-          </select>
-        </div>
+        <SelectField
+          id="state_management"
+          name="state_management"
+          label="State Management"
+          value={formData.state_management}
+          onChange={handleInputChange}
+          options={projectOptions.frontend_options?.state_management}
+        />
 
-        <div className="form-group">
-          <label htmlFor="http_client">HTTP Client</label>
-          <select
-            id="http_client"
-            name="http_client"
-            value={formData.http_client}
-            onChange={handleInputChange}
-          >
-            <option value="">Seçiniz...</option>
-            {projectOptions.frontend_options?.http_clients?.map(client => (
-              <option key={client} value={client}>{client}</option>
-            ))}
-          </select>
-        </div>
+        <SelectField
+          id="http_client"
+          name="http_client"
+          label="HTTP Client"
+          value={formData.http_client}
+          onChange={handleInputChange}
+          options={projectOptions.frontend_options?.http_clients}
+        />
 
-        <div className="form-group">
-          <label htmlFor="ui_library">UI Kütüphanesi</label>
-          <select
-            id="ui_library"
-            name="ui_library"
-            value={formData.ui_library}
-            onChange={handleInputChange}
-          >
-            <option value="">Seçiniz...</option>
-            {projectOptions.frontend_options?.ui_libraries?.map(lib => (
-              <option key={lib} value={lib}>{lib}</option>
-            ))}
-          </select>
-        </div>
+        <SelectField
+          id="ui_library"
+          name="ui_library"
+          label="UI Kütüphanesi"
+          value={formData.ui_library}
+          onChange={handleInputChange}
+          options={projectOptions.frontend_options?.ui_libraries}
+        />
 
-        <div className="form-group">
-          <label htmlFor="build_tool">Build Tool</label>
-          <select
-            id="build_tool"
-            name="build_tool"
-            value={formData.build_tool}
-            onChange={handleInputChange}
-          >
-            <option value="">Seçiniz...</option>
-            {projectOptions.frontend_options?.build_tools?.map(tool => (
-              <option key={tool} value={tool}>{tool}</option>
-            ))}
-          </select>
-        </div>
+        <SelectField
+          id="build_tool"
+          name="build_tool"
+          label="Build Tool"
+          value={formData.build_tool}
+          onChange={handleInputChange}
+          options={projectOptions.frontend_options?.build_tools}
+        />
 
-        <div className="form-group">
-          <label htmlFor="testing_framework">Test Framework</label>
-          <select
-            id="testing_framework"
-            name="testing_framework"
-            value={formData.testing_framework}
-            onChange={handleInputChange}
-          >
-            <option value="">Seçiniz...</option>
-            {projectOptions.frontend_options?.testing_frameworks?.map(tf => (
-              <option key={tf} value={tf}>{tf}</option>
-            ))}
-          </select>
-        </div>
+        <SelectField
+          id="testing_framework"
+          name="testing_framework"
+          label="Test Framework"
+          value={formData.testing_framework}
+          onChange={handleInputChange}
+          options={projectOptions.frontend_options?.testing_frameworks}
+        />
       </div>
     </div>
   );
@@ -231,96 +192,60 @@ const ProjectForm = ({ onSubmit }) => {
       <h3>⚙️ Backend Ayarları</h3>
       
       <div className="form-grid">
-        <div className="form-group">
-          <label htmlFor="backend_language">Backend Dili *</label>
-          <select
-            id="backend_language"
-            name="backend_language"
-            value={formData.backend_language}
-            onChange={handleInputChange}
-            required
-          >
-            <option value="">Seçiniz...</option>
-            {projectOptions.backend_options?.languages?.map(lang => (
-              <option key={lang} value={lang}>{lang}</option>
-            ))}
-          </select>
-        </div>
+        <SelectField
+          id="backend_language"
+          name="backend_language"
+          label="Backend Dili"
+          value={formData.backend_language}
+          onChange={handleInputChange}
+          required={true}
+          options={projectOptions.backend_options?.languages}
+        />
 
-        <div className="form-group">
-          <label htmlFor="backend_framework">Backend Framework</label>
-          <select
-            id="backend_framework"
-            name="backend_framework"
-            value={formData.backend_framework}
-            onChange={handleInputChange}
-          >
-            <option value="">Seçiniz...</option>
-            {projectOptions.backend_options?.frameworks?.map(fw => (
-              <option key={fw} value={fw}>{fw}</option>
-            ))}
-          </select>
-        </div>
+        <SelectField
+          id="backend_framework"
+          name="backend_framework"
+          label="Backend Framework"
+          value={formData.backend_framework}
+          onChange={handleInputChange}
+          options={projectOptions.backend_options?.frameworks}
+        />
 
-        <div className="form-group">
-          <label htmlFor="database_type">Veritabanı</label>
-          <select
-            id="database_type"
-            name="database_type"
-            value={formData.database_type}
-            onChange={handleInputChange}
-          >
-            <option value="">Seçiniz...</option>
-            {projectOptions.backend_options?.databases?.map(db => (
-              <option key={db} value={db}>{db}</option>
-            ))}
-          </select>
-        </div>
+        <SelectField
+          id="database_type"
+          name="database_type"
+          label="Veritabanı"
+          value={formData.database_type}
+          onChange={handleInputChange}
+          options={projectOptions.backend_options?.databases}
+        />
 
-        <div className="form-group">
-          <label htmlFor="auth_method">Kimlik Doğrulama</label>
-          <select
-            id="auth_method"
-            name="auth_method"
-            value={formData.auth_method}
-            onChange={handleInputChange}
-          >
-            <option value="">Seçiniz...</option>
-            {projectOptions.backend_options?.auth_methods?.map(auth => (
-              <option key={auth} value={auth}>{auth}</option>
-            ))}
-          </select>
-        </div>
+        <SelectField
+          id="auth_method"
+          name="auth_method"
+          label="Kimlik Doğrulama"
+          value={formData.auth_method}
+          onChange={handleInputChange}
+          options={projectOptions.backend_options?.auth_methods}
+        />
 
-        <div className="form-group">
-          <label htmlFor="api_style">API Stili</label>
-          <select
-            id="api_style"
-            name="api_style"
-            value={formData.api_style}
-            onChange={handleInputChange}
-          >
-            <option value="">Seçiniz...</option>
-            {projectOptions.backend_options?.api_styles?.map(style => (
-              <option key={style} value={style}>{style}</option>
-            ))}
-          </select>
-        </div>
+        <SelectField
+          id="api_style"
+          name="api_style"
+          label="API Stili"
+          value={formData.api_style}
+          onChange={handleInputChange}
+          options={projectOptions.backend_options?.api_styles}
+        />
 
-        <div className="form-group">
-          <label htmlFor="orm_tool">ORM/Database Tool</label>
-          <select
-            id="orm_tool"
-            name="orm_tool"
-            value={formData.orm_tool}
-            onChange={handleInputChange}
-          >
-            <option value="">Seçiniz...</option>
-            {projectOptions.backend_options?.orm_tools?.map(orm => (
-              <option key={orm} value={orm}>{orm}</option>
-            ))}
-          </select>
-        </div>
+        <SelectField
+          id="orm_tool"
+          name="orm_tool"
+          label="ORM/Database Tool"
+          value={formData.orm_tool}
+          onChange={handleInputChange}
+          options={projectOptions.backend_options?.orm_tools}
+        />
       </div>
     </div>
   );
@@ -333,41 +258,32 @@ const ProjectForm = ({ onSubmit }) => {
       <div className="form-section">
         <h3>🔧 Genel Bilgiler</h3>
         <div className="form-grid">
-          <div className="form-group">
-            <label htmlFor="project_category">Proje Kategorisi *</label>
-            <select
-              id="project_category"
-              name="project_category"
-              value={formData.project_category}
-              onChange={handleInputChange}
-              required
-            >
-              <option value="">Seçiniz...</option>
-              {projectOptions.categories?.map(category => (
-                <option key={category} value={category}>
-                  {category === 'frontend' ? '🎨 Frontend' : 
-                   category === 'backend' ? '⚙️ Backend' : 
-                   '🔄 Full Stack'}
-                </option>
-              ))}
-            </select>
-          </div>
+          <SelectField
+            id="project_category"
+            name="project_category"
+            label="Proje Kategorisi"
+            value={formData.project_category}
+            onChange={handleInputChange}
+            required={true}
+          >
+            {projectOptions.categories?.map(category => (
+              <option key={category} value={category}>
+                {category === 'frontend' ? '🎨 Frontend' :
+                 category === 'backend' ? '⚙️ Backend' :
+                 '🔄 Full Stack'}
+              </option>
+            ))}
+          </SelectField>
 
-          <div className="form-group">
-            <label htmlFor="project_type">Proje Türü *</label>
-            <select
-              id="project_type"
-              name="project_type"
-              value={formData.project_type}
-              onChange={handleInputChange}
-              required
-            >
-              <option value="">Seçiniz...</option>
-              {projectOptions.common_options?.project_types?.map(type => (
-                <option key={type} value={type}>{type}</option>
-              ))}
-            </select>
-          </div>
+          <SelectField
+            id="project_type"
+            name="project_type"
+            label="Proje Türü"
+            value={formData.project_type}
+            onChange={handleInputChange}
+            required={true}
+            options={projectOptions.common_options?.project_types}
+          />
         </div>
       </div>
 
@@ -385,35 +301,23 @@ const ProjectForm = ({ onSubmit }) => {
       <div className="form-section">
         <h3>⚡ Ortak Ayarlar</h3>
         <div className="form-grid">
-          <div className="form-group">
-            <label htmlFor="deployment_platform">Deployment Platform</label>
-            <select
-              id="deployment_platform"
-              name="deployment_platform"
-              value={formData.deployment_platform}
-              onChange={handleInputChange}
-            >
-              <option value="">Seçiniz...</option>
-              {projectOptions.common_options?.deployment_platforms?.map(platform => (
-                <option key={platform} value={platform}>{platform}</option>
-              ))}
-            </select>
-          </div>
+          <SelectField
+            id="deployment_platform"
+            name="deployment_platform"
+            label="Deployment Platform"
+            value={formData.deployment_platform}
+            onChange={handleInputChange}
+            options={projectOptions.common_options?.deployment_platforms}
+          />
 
-          <div className="form-group">
-            <label htmlFor="code_style">Kod Stili</label>
-            <select
-              id="code_style"
-              name="code_style"
-              value={formData.code_style}
-              onChange={handleInputChange}
-            >
-              <option value="">Seçiniz...</option>
-              {projectOptions.common_options?.code_styles?.map(style => (
-                <option key={style} value={style}>{style}</option>
-              ))}
-            </select>
-          </div>
+          <SelectField
+            id="code_style"
+            name="code_style"
+            label="Kod Stili"
+            value={formData.code_style}
+            onChange={handleInputChange}
+            options={projectOptions.common_options?.code_styles}
+          />
 
           <div className="form-group">
             <div className="checkbox-group">
