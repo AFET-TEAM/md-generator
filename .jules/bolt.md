@@ -22,3 +22,7 @@
 ## 2025-01-26 - Memoize Repeated Select Fields to Avoid Render Thrashing
 **Learning:** In large React forms (like `ProjectForm.js`), having numerous inline `<select>` mappings combined with unrelated frequent state updates (like typing in a textarea) causes massive array allocations and React node diffing.
 **Action:** Extract repetitive `<select>` and `<label>` patterns into a dedicated `SelectField` component wrapped in `React.memo`. Passing stable callbacks (`useCallback`) and stable `options` arrays prevents O(N*M) DOM node recalculations during unrelated keystrokes, providing significant typing lag reduction.
+
+## 2026-03-12 - Cache Static API Responses Across Component Lifecycles
+**Learning:** Conditional rendering of form components during tab switches (like `ProjectForm` toggling between single and multi-agent modes in `App.js`) causes full unmounts and remounts. If these components fetch static configuration data on mount (e.g., `/project-categories`), it leads to redundant API calls on every tab switch, degrading UI responsiveness and adding backend load.
+**Action:** Cache static API responses at the module level (outside the component) using promises (e.g., `optionsCachePromise = axios.get(...)`). This prevents duplicate network requests across component lifecycles and makes the UI render instantly on subsequent mounts.

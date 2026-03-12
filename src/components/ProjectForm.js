@@ -3,6 +3,36 @@ import axios from 'axios';
 import API_BASE_URL from '../config/api';
 import SelectField from './SelectField';
 
+const FALLBACK_OPTIONS = {
+  categories: ['frontend', 'backend', 'fullstack'],
+  frontend_options: {
+    frameworks: ['React', 'Vue.js', 'Angular', 'Svelte', 'Next.js'],
+    styling_approaches: ['CSS', 'SCSS/SASS', 'Styled Components', 'Tailwind CSS'],
+    state_management: ['useState', 'Zustand', 'Redux Toolkit', 'TanStack Query'],
+    http_clients: ['Fetch API', 'Axios', 'TanStack Query', 'SWR'],
+    ui_libraries: ['None', 'Material-UI', 'Ant Design', 'Chakra UI'],
+    build_tools: ['Vite', 'Webpack', 'Next.js', 'Create React App'],
+    testing_frameworks: ['Jest', 'Vitest', 'Cypress', 'Playwright']
+  },
+  backend_options: {
+    languages: ['Python', 'JavaScript/Node.js', 'Java', 'C#', 'Go'],
+    frameworks: ['FastAPI', 'Django', 'Express.js', 'Spring Boot'],
+    databases: ['PostgreSQL', 'MySQL', 'MongoDB', 'Redis'],
+    auth_methods: ['JWT', 'Session-based', 'OAuth 2.0', 'Auth0'],
+    api_styles: ['REST', 'GraphQL', 'gRPC'],
+    orm_tools: ['Prisma', 'TypeORM', 'Sequelize', 'SQLAlchemy']
+  },
+  common_options: {
+    project_types: ['Web Application', 'Mobile App', 'API/Microservice', 'CLI Tool'],
+    deployment_platforms: ['AWS', 'Vercel', 'Netlify', 'Heroku'],
+    code_styles: ['Standard', 'Prettier', 'ESLint', 'Airbnb']
+  }
+};
+
+// Performance Optimization: Cache the API response to prevent redundant network requests
+// when switching between Single and Multi-Agent modes which remounts the component.
+let optionsCachePromise = null;
+
 const ProjectForm = ({ onSubmit }) => {
   const [formData, setFormData] = useState({
     // Genel bilgiler
@@ -44,40 +74,19 @@ const ProjectForm = ({ onSubmit }) => {
   const [additionalRequirement, setAdditionalRequirement] = useState('');
 
   useEffect(() => {
-    // Load available options from API
+    // Load available options from API or cache
     const loadOptions = async () => {
-      try {
-        const response = await axios.get(`${API_BASE_URL}/project-categories`);
-        setProjectOptions(response.data);
-      } catch (error) {
-        console.error('Error loading options:', error);
-        // Fallback data if API fails
-        setProjectOptions({
-          categories: ['frontend', 'backend', 'fullstack'],
-          frontend_options: {
-            frameworks: ['React', 'Vue.js', 'Angular', 'Svelte', 'Next.js'],
-            styling_approaches: ['CSS', 'SCSS/SASS', 'Styled Components', 'Tailwind CSS'],
-            state_management: ['useState', 'Zustand', 'Redux Toolkit', 'TanStack Query'],
-            http_clients: ['Fetch API', 'Axios', 'TanStack Query', 'SWR'],
-            ui_libraries: ['None', 'Material-UI', 'Ant Design', 'Chakra UI'],
-            build_tools: ['Vite', 'Webpack', 'Next.js', 'Create React App'],
-            testing_frameworks: ['Jest', 'Vitest', 'Cypress', 'Playwright']
-          },
-          backend_options: {
-            languages: ['Python', 'JavaScript/Node.js', 'Java', 'C#', 'Go'],
-            frameworks: ['FastAPI', 'Django', 'Express.js', 'Spring Boot'],
-            databases: ['PostgreSQL', 'MySQL', 'MongoDB', 'Redis'],
-            auth_methods: ['JWT', 'Session-based', 'OAuth 2.0', 'Auth0'],
-            api_styles: ['REST', 'GraphQL', 'gRPC'],
-            orm_tools: ['Prisma', 'TypeORM', 'Sequelize', 'SQLAlchemy']
-          },
-          common_options: {
-            project_types: ['Web Application', 'Mobile App', 'API/Microservice', 'CLI Tool'],
-            deployment_platforms: ['AWS', 'Vercel', 'Netlify', 'Heroku'],
-            code_styles: ['Standard', 'Prettier', 'ESLint', 'Airbnb']
-          }
-        });
+      if (!optionsCachePromise) {
+        optionsCachePromise = axios.get(`${API_BASE_URL}/project-categories`)
+          .then(response => response.data)
+          .catch(error => {
+            console.error('Error loading options:', error);
+            return FALLBACK_OPTIONS;
+          });
       }
+
+      const data = await optionsCachePromise;
+      setProjectOptions(data);
     };
 
     loadOptions();
