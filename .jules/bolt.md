@@ -26,3 +26,7 @@
 ## 2026-03-12 - Cache Static API Responses Across Component Lifecycles
 **Learning:** Conditional rendering of form components during tab switches (like `ProjectForm` toggling between single and multi-agent modes in `App.js`) causes full unmounts and remounts. If these components fetch static configuration data on mount (e.g., `/project-categories`), it leads to redundant API calls on every tab switch, degrading UI responsiveness and adding backend load.
 **Action:** Cache static API responses at the module level (outside the component) using promises (e.g., `optionsCachePromise = axios.get(...)`). This prevents duplicate network requests across component lifecycles and makes the UI render instantly on subsequent mounts.
+
+## 2025-01-26 - Do Not Defeat React.memo with Inline Functions
+**Learning:** In React components rendering heavy or expensive sub-components (like `ConfigFileManager` parsing complex Markdown via `ReactMarkdown`), passing an inline function to a prop (e.g. `onReset={() => setConfigs(null)}`) breaks the memoization of that sub-component, leading to severe rendering lag across the application on unrelated form state updates.
+**Action:** When a sub-component is explicitly wrapped in `React.memo` (like `ConfigFileManager`), verify that every callback prop provided by the parent is stabilized, ideally via `useCallback()`, to ensure unrelated updates (like keystrokes) in the parent don't trigger pointless deep renders.
