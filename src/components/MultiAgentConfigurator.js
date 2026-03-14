@@ -59,6 +59,11 @@ const MultiAgentConfigurator = ({ projectData, onBack }) => {
     });
   }, []);
 
+  // Performance Optimization: Use stable reference for onReset callback to prevent
+  // ConfigFileManager (which is wrapped in React.memo) from re-rendering
+  // on every keystroke when typing in the "Genel Talimatlar" textarea or other fields.
+  const handleResetConfigs = useCallback(() => setGeneratedConfigs(null), []);
+
   const toggleConfigFile = (configId) => {
     if (selectedConfigFiles.includes(configId)) {
       setSelectedConfigFiles(selectedConfigFiles.filter(id => id !== configId));
@@ -532,7 +537,7 @@ const MultiAgentConfigurator = ({ projectData, onBack }) => {
       {generatedConfigs && (
         <ConfigFileManager
           configs={generatedConfigs}
-          onReset={() => setGeneratedConfigs(null)}
+          onReset={handleResetConfigs}
         />
       )}
     </div>
