@@ -1,6 +1,14 @@
 import React, { useState, useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 
+// Performance Optimization: Memoize the Markdown rendering component
+// ReactMarkdown is an expensive component to render. By wrapping it in React.memo,
+// we ensure it only re-renders when the actual markdown content changes, preventing UI lag
+// during unrelated state updates in the parent (like changing view modes or downloading).
+const MemoizedMarkdownView = React.memo(({ content }) => (
+  <ReactMarkdown>{content}</ReactMarkdown>
+));
+
 const RulesetDisplay = ({ ruleset, onReset }) => {
   const [viewMode, setViewMode] = useState('markdown'); // 'markdown' or 'json'
 
@@ -93,7 +101,7 @@ const RulesetDisplay = ({ ruleset, onReset }) => {
       <div className="ruleset-content">
         {viewMode === 'markdown' ? (
           <div className="markdown-content">
-            <ReactMarkdown>{ruleset.markdown}</ReactMarkdown>
+            <MemoizedMarkdownView content={ruleset.markdown} />
           </div>
         ) : (
           <div className="json-content">
