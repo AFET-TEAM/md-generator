@@ -30,3 +30,7 @@
 ## 2025-01-26 - Do Not Defeat React.memo with Inline Functions
 **Learning:** In React components rendering heavy or expensive sub-components (like `ConfigFileManager` parsing complex Markdown via `ReactMarkdown`), passing an inline function to a prop (e.g. `onReset={() => setConfigs(null)}`) breaks the memoization of that sub-component, leading to severe rendering lag across the application on unrelated form state updates.
 **Action:** When a sub-component is explicitly wrapped in `React.memo` (like `ConfigFileManager`), verify that every callback prop provided by the parent is stabilized, ideally via `useCallback()`, to ensure unrelated updates (like keystrokes) in the parent don't trigger pointless deep renders.
+
+## 2026-03-17 - Memoize dynamically mapped elements to preserve child component memoization
+**Learning:** Passing dynamically mapped React elements (e.g. `array.map(...)`) directly as the `children` prop to a `React.memo` component defeats memoization because a new array reference is created on every render. This can cause severe UI lag in large forms.
+**Action:** Use `useMemo` to memoize the dynamically mapped elements before passing them as children to the memoized component. Also extract static mappings (like template options) outside the component definition.

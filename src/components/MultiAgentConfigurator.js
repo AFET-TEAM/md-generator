@@ -3,6 +3,12 @@ import AgentCard from './AgentCard';
 import ConfigFileManager from './ConfigFileManager';
 import { AGENT_TEMPLATES, CONFIG_FILE_TYPES } from '../data/skills';
 
+const TEMPLATE_OPTIONS = AGENT_TEMPLATES.map(template => (
+  <option key={template.id} value={template.id}>
+    {template.name}
+  </option>
+));
+
 const createEmptyAgent = () => ({
   id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
   name: '',
@@ -466,11 +472,7 @@ const MultiAgentConfigurator = ({ projectData, onBack }) => {
                 defaultValue=""
               >
                 <option value="">Sablondan Ekle...</option>
-                {AGENT_TEMPLATES.map(template => (
-                  <option key={template.id} value={template.id}>
-                    {template.name}
-                  </option>
-                ))}
+                {TEMPLATE_OPTIONS}
               </select>
             </div>
           </div>

@@ -2,6 +2,12 @@ import React, { useState, useCallback } from 'react';
 import SkillSelector from './SkillSelector';
 import { AGENT_TEMPLATES } from '../data/skills';
 
+const TEMPLATE_OPTIONS = AGENT_TEMPLATES.map(template => (
+  <option key={template.id} value={template.id}>
+    {template.name} - {template.description}
+  </option>
+));
+
 const AgentCard = ({ agent, onUpdate, onRemove, index }) => {
 // Performance Optimization: Wrapped in React.memo (at export) to prevent unnecessary re-renders
 // when other agents are updated. Only re-renders if its own props change.
@@ -67,11 +73,7 @@ const AgentCard = ({ agent, onUpdate, onRemove, index }) => {
               onChange={(e) => handleTemplateSelect(e.target.value)}
             >
               <option value="">Sablon seciniz...</option>
-              {AGENT_TEMPLATES.map(template => (
-                <option key={template.id} value={template.id}>
-                  {template.name} - {template.description}
-                </option>
-              ))}
+              {TEMPLATE_OPTIONS}
             </select>
           </div>
 
