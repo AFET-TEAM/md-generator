@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
 import API_BASE_URL from '../config/api';
 import SelectField from './SelectField';
@@ -196,6 +196,20 @@ const ProjectForm = ({ onSubmit }) => {
     </div>
   );
 
+  // Performance Optimization: Memoize the dynamically mapped elements passed as children
+  // to the SelectField component. If passed directly in the JSX as an inline `.map()`,
+  // it creates a new array of objects on every render, defeating the React.memo()
+  // wrapper on SelectField.
+  const categoryOptionsElements = useMemo(() => {
+    return projectOptions.categories?.map(category => (
+      <option key={category} value={category}>
+        {category === 'frontend' ? '🎨 Frontend' :
+         category === 'backend' ? '⚙️ Backend' :
+         '🔄 Full Stack'}
+      </option>
+    ));
+  }, [projectOptions.categories]);
+
   const renderBackendFields = () => (
     <div className="category-fields">
       <h3>⚙️ Backend Ayarları</h3>
@@ -275,13 +289,7 @@ const ProjectForm = ({ onSubmit }) => {
             onChange={handleInputChange}
             required={true}
           >
-            {projectOptions.categories?.map(category => (
-              <option key={category} value={category}>
-                {category === 'frontend' ? '🎨 Frontend' :
-                 category === 'backend' ? '⚙️ Backend' :
-                 '🔄 Full Stack'}
-              </option>
-            ))}
+            {categoryOptionsElements}
           </SelectField>
 
           <SelectField
