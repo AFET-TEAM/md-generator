@@ -30,6 +30,11 @@
 ## 2025-01-26 - Do Not Defeat React.memo with Inline Functions
 **Learning:** In React components rendering heavy or expensive sub-components (like `ConfigFileManager` parsing complex Markdown via `ReactMarkdown`), passing an inline function to a prop (e.g. `onReset={() => setConfigs(null)}`) breaks the memoization of that sub-component, leading to severe rendering lag across the application on unrelated form state updates.
 **Action:** When a sub-component is explicitly wrapped in `React.memo` (like `ConfigFileManager`), verify that every callback prop provided by the parent is stabilized, ideally via `useCallback()`, to ensure unrelated updates (like keystrokes) in the parent don't trigger pointless deep renders.
+
 ## 2026-03-09 - Memoize Repeated Select Fields to Avoid Render Thrashing
 **Learning:** Passing dynamically mapped React elements (like `array.map(...)`) directly as the `children` prop to a `React.memo` component (e.g. `SelectField`) creates a new array reference on every render, defeating memoization and causing unnecessary re-renders when parent states (like typed input strings) update.
 **Action:** Extract mapped elements into a `useMemo` hook and pass the memoized array instead, allowing `React.memo` to function correctly via referential equality.
+
+## 2025-01-26 - Isolate Heavy Components from Parent Re-renders
+**Learning:** React components that parse or render heavy content (like `ReactMarkdown`) can become severe performance bottlenecks if they are forced to re-render on unrelated state changes in the parent component (e.g., toggling a UI state or showing a "Copied" notification).
+**Action:** Extract the heavy rendering logic into its own small component that accepts only the primitive data it needs (like a `content` string), and wrap it in `React.memo`. This guarantees the expensive work is skipped when the parent updates independently.

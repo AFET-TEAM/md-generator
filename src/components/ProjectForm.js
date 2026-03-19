@@ -208,6 +208,20 @@ const ProjectForm = ({ onSubmit }) => {
     </div>
   );
 
+  // Performance Optimization: Memoize the dynamically mapped elements passed as children
+  // to the SelectField component. If passed directly in the JSX as an inline `.map()`,
+  // it creates a new array of objects on every render, defeating the React.memo()
+  // wrapper on SelectField.
+  const categoryOptionsElements = useMemo(() => {
+    return projectOptions.categories?.map(category => (
+      <option key={category} value={category}>
+        {category === 'frontend' ? '🎨 Frontend' :
+         category === 'backend' ? '⚙️ Backend' :
+         '🔄 Full Stack'}
+      </option>
+    ));
+  }, [projectOptions.categories]);
+
   const renderBackendFields = () => (
     <div className="category-fields">
       <h3>⚙️ Backend Ayarları</h3>
@@ -288,6 +302,7 @@ const ProjectForm = ({ onSubmit }) => {
             required={true}
           >
             {categoryOptions}
+            {categoryOptionsElements}
           </SelectField>
 
           <SelectField

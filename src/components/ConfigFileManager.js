@@ -5,6 +5,14 @@ import ReactMarkdown from 'react-markdown';
 // re-renders of expensive ReactMarkdown and JSON views when parent re-renders.
 // `Object.entries(configs)` causes issues if configs change, so we will memoize the component correctly.
 
+// Performance Optimization: Memoize the Markdown rendering component
+// ReactMarkdown is an expensive component to render. By wrapping it in React.memo,
+// we ensure it only re-renders when the actual content changes, preventing UI lag
+// during unrelated state updates in the parent (like copying text or tab switching).
+const MemoizedMarkdownView = React.memo(({ content }) => (
+  <ReactMarkdown>{content}</ReactMarkdown>
+));
+
 const ConfigFileManager = ({ configs, onReset }) => {
   const configEntries = useMemo(() => Object.entries(configs || {}), [configs]);
   const [activeTab, setActiveTab] = useState(configEntries.length > 0 ? configEntries[0][0] : null);
@@ -102,7 +110,7 @@ const ConfigFileManager = ({ configs, onReset }) => {
           <div className="config-preview">
             {activeConfig.format === 'markdown' ? (
               <div className="markdown-content">
-                <ReactMarkdown>{activeConfig.content}</ReactMarkdown>
+                <MemoizedMarkdownView content={activeConfig.content} />
               </div>
             ) : (
               <pre className="config-raw-content">
