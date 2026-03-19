@@ -34,3 +34,11 @@
 ## 2026-03-17 - Memoize dynamically mapped elements to preserve child component memoization
 **Learning:** Passing dynamically mapped React elements (e.g. `array.map(...)`) directly as the `children` prop to a `React.memo` component defeats memoization because a new array reference is created on every render. This can cause severe UI lag in large forms.
 **Action:** Use `useMemo` to memoize the dynamically mapped elements before passing them as children to the memoized component. Also extract static mappings (like template options) outside the component definition.
+
+## 2026-03-09 - Memoize Repeated Select Fields to Avoid Render Thrashing
+**Learning:** Passing dynamically mapped React elements (like `array.map(...)`) directly as the `children` prop to a `React.memo` component (e.g. `SelectField`) creates a new array reference on every render, defeating memoization and causing unnecessary re-renders when parent states (like typed input strings) update.
+**Action:** Extract mapped elements into a `useMemo` hook and pass the memoized array instead, allowing `React.memo` to function correctly via referential equality.
+
+## 2025-01-26 - Isolate Heavy Components from Parent Re-renders
+**Learning:** React components that parse or render heavy content (like `ReactMarkdown`) can become severe performance bottlenecks if they are forced to re-render on unrelated state changes in the parent component (e.g., toggling a UI state or showing a "Copied" notification).
+**Action:** Extract the heavy rendering logic into its own small component that accepts only the primitive data it needs (like a `content` string), and wrap it in `React.memo`. This guarantees the expensive work is skipped when the parent updates independently.
