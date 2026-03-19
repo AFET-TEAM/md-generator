@@ -94,6 +94,18 @@ const ProjectForm = ({ onSubmit }) => {
 
   // Performance Optimization: Use useCallback to maintain stable reference
   // so that SelectField components do not re-render unnecessarily.
+  // Performance Optimization: Memoize the mapped options to prevent breaking React.memo
+  // on the SelectField component. If passed directly in JSX, it creates a new array on every render.
+  const categoryOptions = useMemo(() => {
+    return projectOptions.categories?.map(category => (
+      <option key={category} value={category}>
+        {category === 'frontend' ? '🎨 Frontend' :
+         category === 'backend' ? '⚙️ Backend' :
+         '🔄 Full Stack'}
+      </option>
+    ));
+  }, [projectOptions.categories]);
+
   const handleInputChange = useCallback((e) => {
     const { name, value, type, checked } = e.target;
     setFormData(prev => ({
@@ -289,6 +301,7 @@ const ProjectForm = ({ onSubmit }) => {
             onChange={handleInputChange}
             required={true}
           >
+            {categoryOptions}
             {categoryOptionsElements}
           </SelectField>
 
