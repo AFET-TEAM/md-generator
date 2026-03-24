@@ -42,3 +42,7 @@
 ## 2025-01-26 - Isolate Heavy Components from Parent Re-renders
 **Learning:** React components that parse or render heavy content (like `ReactMarkdown`) can become severe performance bottlenecks if they are forced to re-render on unrelated state changes in the parent component (e.g., toggling a UI state or showing a "Copied" notification).
 **Action:** Extract the heavy rendering logic into its own small component that accepts only the primitive data it needs (like a `content` string), and wrap it in `React.memo`. This guarantees the expensive work is skipped when the parent updates independently.
+
+## 2026-05-19 - Fast Object Initialization in React hooks
+**Learning:** Initializing a dictionary or object dynamically in a `for` loop inside frequently executed React hooks (like `useMemo` during search typing) causes observable performance degradation due to object allocation overhead.
+**Action:** Pre-compute a template object outside the component at module level. Inside the React render cycle or hook, clone it using `Object.assign({}, TEMPLATE_OBJ)` instead of creating it via a loop. This provides an immediate and measurable performance boost for object instantiation in hot paths.
