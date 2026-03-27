@@ -46,3 +46,7 @@
 ## 2024-03-23 - Fast Object Initialization in React Renders
 **Learning:** Initializing a large number of object keys inside a high-frequency render loop using a `for` loop (e.g., `counts[id] = 0`) is significantly slower (~2.5x) than pre-allocating an initial template object outside the component and using `Object.assign({}, INIT_OBJ)` to clone it inside `useMemo` or render bodies.
 **Action:** Use `Object.assign` with a pre-computed template object when initializing large dictionaries (like maps or counters over static datasets) inside frequent React hooks.
+
+## 2026-03-27 - Remove Duplicate Mapped Elements to Prevent Build Errors and Render Thrashing
+**Learning:** Having duplicate inline `.map()` operations to generate children elements for a `React.memo` component (like `SelectField` getting `categoryOptionsElements`) can not only defeat the memoization by causing new array references to be passed on every render, but accidentally copying/pasting `const categoryOptions = ...` blocks in large component files (like `ProjectForm.js`) causes `Syntax error: Identifier 'categoryOptions' has already been declared` and breaks the production build completely.
+**Action:** Consolidate redundant element mapping loops into a single `useMemo` block, and ensure they are only passed once to the child component. Always run a full build test (`npm run build`) in addition to unit tests to catch duplicate identifiers in React components before submitting.
