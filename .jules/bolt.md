@@ -43,6 +43,6 @@
 **Learning:** React components that parse or render heavy content (like `ReactMarkdown`) can become severe performance bottlenecks if they are forced to re-render on unrelated state changes in the parent component (e.g., toggling a UI state or showing a "Copied" notification).
 **Action:** Extract the heavy rendering logic into its own small component that accepts only the primitive data it needs (like a `content` string), and wrap it in `React.memo`. This guarantees the expensive work is skipped when the parent updates independently.
 
-## 2025-01-26 - Optimize Dynamic Object Initialization in React Hooks
-**Learning:** Initializing a large object or dictionary inside a frequent React hook (e.g., `useMemo` for category counts) using a dynamic `for` loop causes overhead due to object allocation and property assignment during the render phase. This can slow down UI interactions like search filtering.
-**Action:** Pre-compute a base template object outside the component at the module level. Clone this template inside the hook using `Object.assign({}, TEMPLATE_OBJ)` instead of running an initialization loop. This provides a significant speedup (~2.5x) in hot render loops.
+## 2024-03-23 - Fast Object Initialization in React Renders
+**Learning:** Initializing a large number of object keys inside a high-frequency render loop using a `for` loop (e.g., `counts[id] = 0`) is significantly slower (~2.5x) than pre-allocating an initial template object outside the component and using `Object.assign({}, INIT_OBJ)` to clone it inside `useMemo` or render bodies.
+**Action:** Use `Object.assign` with a pre-computed template object when initializing large dictionaries (like maps or counters over static datasets) inside frequent React hooks.
