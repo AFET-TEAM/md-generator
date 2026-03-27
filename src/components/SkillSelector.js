@@ -15,6 +15,7 @@ const CATEGORY_MAP = {};
 const INITIAL_CATEGORY_COUNTS = {};
 
 SKILL_CATEGORIES.forEach(cat => {
+  TEMPLATE_COUNTS[cat.id] = 0;
   CATEGORY_MAP[cat.id] = cat;
   INITIAL_CATEGORY_COUNTS[cat.id] = 0;
   cat.skills.forEach(skill => {
