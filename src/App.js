@@ -1,14 +1,15 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
 import axios from 'axios';
 import ProjectForm from './components/ProjectForm';
-import RulesetDisplay from './components/RulesetDisplay';
+// RulesetDisplay moved to lazy load
 import LoadingSpinner from './components/LoadingSpinner';
 import ChunkErrorBoundary from './components/ChunkErrorBoundary';
 import API_BASE_URL from './config/api';
 import './App.css';
 
-// Lazy load MultiAgentConfigurator
+// Lazy load MultiAgentConfigurator and RulesetDisplay
 const MultiAgentConfigurator = lazy(() => import('./components/MultiAgentConfigurator'));
+const RulesetDisplay = lazy(() => import('./components/RulesetDisplay'));
 
 function App() {
   const [ruleset, setRuleset] = useState(null);
@@ -130,10 +131,12 @@ function App() {
             )}
 
             {ruleset && !loading && (
-              <RulesetDisplay
-                ruleset={ruleset}
-                onReset={handleReset}
-              />
+              <Suspense fallback={<LoadingSpinner title="Ruleset Yukleniyor..." message="Gorsel bilesenler hazirlaniyor." />}>
+                <RulesetDisplay
+                  ruleset={ruleset}
+                  onReset={handleReset}
+                />
+              </Suspense>
             )}
           </>
         )}
