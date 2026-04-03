@@ -50,3 +50,7 @@
 ## 2026-03-27 - Remove Duplicate Mapped Elements to Prevent Build Errors and Render Thrashing
 **Learning:** Having duplicate inline `.map()` operations to generate children elements for a `React.memo` component (like `SelectField` getting `categoryOptionsElements`) can not only defeat the memoization by causing new array references to be passed on every render, but accidentally copying/pasting `const categoryOptions = ...` blocks in large component files (like `ProjectForm.js`) causes `Syntax error: Identifier 'categoryOptions' has already been declared` and breaks the production build completely.
 **Action:** Consolidate redundant element mapping loops into a single `useMemo` block, and ensure they are only passed once to the child component. Always run a full build test (`npm run build`) in addition to unit tests to catch duplicate identifiers in React components before submitting.
+
+## 2026-04-02 - Lazy Load Non-Critical Components
+**Learning:** In React applications, importing heavy or non-critical components (like `RulesetDisplay`, which depends on `react-markdown`) synchronously in the main bundle increases the initial load time significantly. Even if the component is not immediately visible, its dependencies are parsed and executed.
+**Action:** Use `React.lazy` and `Suspense` to lazily load these components so that they are split into separate chunks and only loaded when needed. This resulted in a reduction of the main bundle size.
