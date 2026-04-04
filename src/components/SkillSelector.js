@@ -1,5 +1,23 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useRef } from 'react';
 import { SKILL_CATEGORIES } from '../data/skills';
+
+// Performance Optimization: Memoize individual skill items to prevent O(N) DOM
+// updates when a single skill is toggled.
+const SkillItem = React.memo(({ skill, isSelected, onToggle }) => {
+  return (
+    <label className={`skill-item ${isSelected ? 'selected' : ''}`}>
+      <input
+        type="checkbox"
+        checked={isSelected}
+        onChange={() => onToggle(skill.id)}
+      />
+      <div className="skill-item-content">
+        <span className="skill-item-name">{skill.name}</span>
+        <span className="skill-item-desc">{skill.description}</span>
+      </div>
+    </label>
+  );
+});
 
 // Performance Optimization: Pre-compute skill name lookup map
 // This avoids O(N*M) nested loop searches during render
@@ -39,13 +57,19 @@ const SkillSelector = ({ selectedSkills, onSkillsChange }) => {
     setExpandedCategory(prev => prev === categoryId ? null : categoryId);
   }, []);
 
+  // Performance Optimization: Use useRef to keep a stable reference to selected skills
+  // This allows toggleSkill to be completely stable and not defeat SkillItem's React.memo
+  const selectedSkillsRef = useRef(selectedSkills);
+  selectedSkillsRef.current = selectedSkills;
+
   const toggleSkill = useCallback((skillId) => {
-    if (selectedSkillsSet.has(skillId)) {
-      onSkillsChange(selectedSkills.filter(id => id !== skillId));
+    const currentSkills = selectedSkillsRef.current;
+    if (currentSkills.includes(skillId)) {
+      onSkillsChange(currentSkills.filter(id => id !== skillId));
     } else {
-      onSkillsChange([...selectedSkills, skillId]);
+      onSkillsChange([...currentSkills, skillId]);
     }
-  }, [selectedSkills, selectedSkillsSet, onSkillsChange]);
+  }, [onSkillsChange]);
 
   const selectAllInCategory = useCallback((categoryId) => {
     const category = CATEGORY_MAP[categoryId];
@@ -222,20 +246,12 @@ const SkillSelector = ({ selectedSkills, onSkillsChange }) => {
               {isExpanded && (
                 <div className="skill-category-items">
                   {category.skills.map(skill => (
-                    <label
+                    <SkillItem
                       key={skill.id}
-                      className={`skill-item ${selectedSkillsSet.has(skill.id) ? 'selected' : ''}`}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={selectedSkillsSet.has(skill.id)}
-                        onChange={() => toggleSkill(skill.id)}
-                      />
-                      <div className="skill-item-content">
-                        <span className="skill-item-name">{skill.name}</span>
-                        <span className="skill-item-desc">{skill.description}</span>
-                      </div>
-                    </label>
+                      skill={skill}
+                      isSelected={selectedSkillsSet.has(skill.id)}
+                      onToggle={toggleSkill}
+                    />
                   ))}
                 </div>
               )}
