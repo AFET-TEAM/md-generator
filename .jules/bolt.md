@@ -54,3 +54,6 @@
 ## 2026-04-02 - Lazy Load Non-Critical Components
 **Learning:** In React applications, importing heavy or non-critical components (like `RulesetDisplay`, which depends on `react-markdown`) synchronously in the main bundle increases the initial load time significantly. Even if the component is not immediately visible, its dependencies are parsed and executed.
 **Action:** Use `React.lazy` and `Suspense` to lazily load these components so that they are split into separate chunks and only loaded when needed. This resulted in a reduction of the main bundle size.
+## 2025-01-26 - Memoize dynamically rendered list items with stable callbacks
+**Learning:** In React, mapping over an array to render complex child elements (like checkboxes in a category list) inline creates new React elements on every render. If these elements receive callbacks that recreate on every render (e.g., `toggleSkill`), the entire list re-renders when a single item changes, causing render thrashing.
+**Action:** Extract the item into a standalone component wrapped in `React.memo` (e.g., `MemoizedSkillItem`). To keep parent callbacks perfectly stable without stale closures, track the parent's state in a `useRef` updated via `useLayoutEffect`, and wrap the callback in `useCallback` with an empty dependency array.
