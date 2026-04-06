@@ -61,12 +61,17 @@ const SkillSelector = ({ selectedSkills, onSkillsChange }) => {
     setExpandedCategory(prev => prev === categoryId ? null : categoryId);
   }, []);
 
+  // Performance Optimization: Use useRef to keep a stable reference to selected skills
+  // This allows toggleSkill to be completely stable and not defeat SkillItem's React.memo
+  const selectedSkillsRef = useRef(selectedSkills);
+  selectedSkillsRef.current = selectedSkills;
+
   const toggleSkill = useCallback((skillId) => {
     const { selectedSkills, selectedSkillsSet, onSkillsChange } = stateRef.current;
     if (selectedSkillsSet.has(skillId)) {
       onSkillsChange(selectedSkills.filter(id => id !== skillId));
     } else {
-      onSkillsChange([...selectedSkills, skillId]);
+      onSkillsChange([...currentSkills, skillId]);
     }
   }, []);
 
