@@ -1,23 +1,20 @@
-import React, { useState, useMemo, useCallback, useRef } from 'react';
+import React, { useState, useMemo, useCallback, useRef, useLayoutEffect } from 'react';
 import { SKILL_CATEGORIES } from '../data/skills';
 
-// Performance Optimization: Memoize individual skill items to prevent O(N) DOM
-// updates when a single skill is toggled.
-const SkillItem = React.memo(({ skill, isSelected, onToggle }) => {
-  return (
-    <label className={`skill-item ${isSelected ? 'selected' : ''}`}>
-      <input
-        type="checkbox"
-        checked={isSelected}
-        onChange={() => onToggle(skill.id)}
-      />
-      <div className="skill-item-content">
-        <span className="skill-item-name">{skill.name}</span>
-        <span className="skill-item-desc">{skill.description}</span>
-      </div>
-    </label>
-  );
-});
+// Performance Optimization: Extract items into a React.memo component to prevent full list re-renders
+const MemoizedSkillItem = React.memo(({ skill, isSelected, onToggle }) => (
+  <label className={`skill-item ${isSelected ? 'selected' : ''}`}>
+    <input
+      type="checkbox"
+      checked={isSelected}
+      onChange={() => onToggle(skill.id)}
+    />
+    <div className="skill-item-content">
+      <span className="skill-item-name">{skill.name}</span>
+      <span className="skill-item-desc">{skill.description}</span>
+    </div>
+  </label>
+));
 
 // Performance Optimization: Pre-compute skill name lookup map
 // This avoids O(N*M) nested loop searches during render
@@ -53,6 +50,13 @@ const SkillSelector = ({ selectedSkills, onSkillsChange }) => {
   // This reduces complexity from O(N*M) to O(N + M) during render
   const selectedSkillsSet = useMemo(() => new Set(selectedSkills), [selectedSkills]);
 
+  // Performance Optimization: track the latest state without adding dependencies
+  // to toggle callbacks, keeping them perfectly stable for MemoizedSkillItem
+  const stateRef = useRef({ selectedSkills, selectedSkillsSet, onSkillsChange });
+  useLayoutEffect(() => {
+    stateRef.current = { selectedSkills, selectedSkillsSet, onSkillsChange };
+  }, [selectedSkills, selectedSkillsSet, onSkillsChange]);
+
   const toggleCategory = useCallback((categoryId) => {
     setExpandedCategory(prev => prev === categoryId ? null : categoryId);
   }, []);
@@ -63,15 +67,16 @@ const SkillSelector = ({ selectedSkills, onSkillsChange }) => {
   selectedSkillsRef.current = selectedSkills;
 
   const toggleSkill = useCallback((skillId) => {
-    const currentSkills = selectedSkillsRef.current;
-    if (currentSkills.includes(skillId)) {
-      onSkillsChange(currentSkills.filter(id => id !== skillId));
+    const { selectedSkills, selectedSkillsSet, onSkillsChange } = stateRef.current;
+    if (selectedSkillsSet.has(skillId)) {
+      onSkillsChange(selectedSkills.filter(id => id !== skillId));
     } else {
       onSkillsChange([...currentSkills, skillId]);
     }
-  }, [onSkillsChange]);
+  }, []);
 
   const selectAllInCategory = useCallback((categoryId) => {
+    const { selectedSkills, selectedSkillsSet, onSkillsChange } = stateRef.current;
     const category = CATEGORY_MAP[categoryId];
     if (!category) return;
 
@@ -104,7 +109,7 @@ const SkillSelector = ({ selectedSkills, onSkillsChange }) => {
       }
       onSkillsChange(newSkills);
     }
-  }, [selectedSkills, onSkillsChange, selectedSkillsSet]);
+  }, []);
 
   // Performance Optimization: Memoize filtered results
   // Only recalculate when searchTerm changes, not when expanding/collapsing categories
@@ -246,7 +251,7 @@ const SkillSelector = ({ selectedSkills, onSkillsChange }) => {
               {isExpanded && (
                 <div className="skill-category-items">
                   {category.skills.map(skill => (
-                    <SkillItem
+                    <MemoizedSkillItem
                       key={skill.id}
                       skill={skill}
                       isSelected={selectedSkillsSet.has(skill.id)}
