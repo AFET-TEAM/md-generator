@@ -15,9 +15,11 @@ const AgentCard = ({ agent, onUpdate, onRemove, index }) => {
   const [showSkillSelector, setShowSkillSelector] = useState(false);
 
   // Pass index to onUpdate to avoid creating a new function in the parent for each item
-  const handleFieldChange = (field, value) => {
-    onUpdate(index, { ...agent, [field]: value });
-  };
+  // Performance Optimization: useCallback ensures the function reference remains stable
+  // This prevents unnecessary re-renders of the input fields if they are memoized or if we want to avoid recreating the function.
+  const handleFieldChange = useCallback((field, value) => {
+    onUpdate(index, (prevAgent) => ({ ...prevAgent, [field]: value }));
+  }, [index, onUpdate]);
 
   // Performance Optimization: Use stable callback for skills update
   // This prevents SkillSelector from re-rendering when other fields (like name) change
@@ -25,18 +27,18 @@ const AgentCard = ({ agent, onUpdate, onRemove, index }) => {
     onUpdate(index, (prevAgent) => ({ ...prevAgent, skills: newSkills }));
   }, [index, onUpdate]);
 
-  const handleTemplateSelect = (templateId) => {
+  const handleTemplateSelect = useCallback((templateId) => {
     const template = AGENT_TEMPLATES.find(t => t.id === templateId);
     if (template) {
-      onUpdate(index, {
-        ...agent,
+      onUpdate(index, (prevAgent) => ({
+        ...prevAgent,
         name: template.name,
         description: template.description,
         role: templateId,
         skills: template.defaultSkills,
-      });
+      }));
     }
-  };
+  }, [index, onUpdate]);
 
   return (
     <div className="agent-card">
