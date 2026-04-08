@@ -57,3 +57,7 @@
 ## 2025-01-26 - Memoize dynamically rendered list items with stable callbacks
 **Learning:** In React, mapping over an array to render complex child elements (like checkboxes in a category list) inline creates new React elements on every render. If these elements receive callbacks that recreate on every render (e.g., `toggleSkill`), the entire list re-renders when a single item changes, causing render thrashing.
 **Action:** Extract the item into a standalone component wrapped in `React.memo` (e.g., `MemoizedSkillItem`). To keep parent callbacks perfectly stable without stale closures, track the parent's state in a `useRef` updated via `useLayoutEffect`, and wrap the callback in `useCallback` with an empty dependency array.
+
+## 2025-04-08 - Memoize Derived Mappings to Prevent Keystroke Lag
+**Learning:** In components like `AgentCard.js` that contain both text inputs and derived array mappings (e.g., mapping `agent.skills` to chips with string replacements), typing in the inputs triggers a re-render that re-allocates strings and React nodes for the chips on every keystroke. This causes measurable typing lag.
+**Action:** Use `useMemo` on the derived mapped elements (e.g. `memoizedSkillChips`) using the array data as the dependency. This isolates the expensive string operations (`.replace()`) and React element creation from unrelated state updates (like typing).
