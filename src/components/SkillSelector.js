@@ -71,7 +71,7 @@ const SkillSelector = ({ selectedSkills, onSkillsChange }) => {
     if (selectedSkillsSet.has(skillId)) {
       onSkillsChange(selectedSkills.filter(id => id !== skillId));
     } else {
-      onSkillsChange([...currentSkills, skillId]);
+      onSkillsChange([...selectedSkills, skillId]);
     }
   }, []);
 

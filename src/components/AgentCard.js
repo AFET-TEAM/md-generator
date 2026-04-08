@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import SkillSelector from './SkillSelector';
 import { AGENT_TEMPLATES } from '../data/skills';
 
@@ -39,6 +39,21 @@ const AgentCard = ({ agent, onUpdate, onRemove, index }) => {
       }));
     }
   }, [index, onUpdate]);
+
+  // Performance Optimization: Memoize skill chips to prevent O(N) regex replacements
+  // and React node recreations on every keystroke when typing in text inputs.
+  const memoizedSkillChips = useMemo(() => {
+    if (!agent.skills || agent.skills.length === 0 || showSkillSelector) return null;
+    return (
+      <div className="agent-skill-chips">
+        {agent.skills.map(skillId => (
+          <span key={skillId} className="skill-chip">
+            {skillId.replace(/-/g, ' ')}
+          </span>
+        ))}
+      </div>
+    );
+  }, [agent.skills, showSkillSelector]);
 
   return (
     <div className="agent-card">
@@ -126,15 +141,7 @@ const AgentCard = ({ agent, onUpdate, onRemove, index }) => {
               </button>
             </div>
 
-            {agent.skills?.length > 0 && !showSkillSelector && (
-              <div className="agent-skill-chips">
-                {agent.skills.map(skillId => (
-                  <span key={skillId} className="skill-chip">
-                    {skillId.replace(/-/g, ' ')}
-                  </span>
-                ))}
-              </div>
-            )}
+            {memoizedSkillChips}
 
             {showSkillSelector && (
               <SkillSelector
