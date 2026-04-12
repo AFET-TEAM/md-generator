@@ -124,12 +124,53 @@ const ProjectForm = ({ onSubmit }) => {
     }
   };
 
-  const handleRemoveRequirement = (index) => {
+  const handleRemoveRequirement = useCallback((index) => {
     setFormData(prev => ({
       ...prev,
       additional_requirements: prev.additional_requirements.filter((_, i) => i !== index)
     }));
-  };
+  }, []);
+
+  // Performance Optimization: Memoize mapped requirements list to prevent
+  // recreating React nodes and inline style objects on every keystroke
+  // in the additionalRequirement or notes inputs.
+  const memoizedRequirementsList = useMemo(() => {
+    if (!formData.additional_requirements || formData.additional_requirements.length === 0) return null;
+    return (
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+        {formData.additional_requirements.map((req, index) => (
+          <span
+            key={index}
+            style={{
+              background: 'rgba(255, 255, 255, 0.2)',
+              padding: '0.25rem 0.5rem',
+              borderRadius: '12px',
+              fontSize: '0.9rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.25rem'
+            }}
+          >
+            {req}
+            <button
+              type="button"
+              onClick={() => handleRemoveRequirement(index)}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: 'white',
+                cursor: 'pointer',
+                fontSize: '1.2rem',
+                lineHeight: 1
+              }}
+            >
+              ×
+            </button>
+          </span>
+        ))}
+      </div>
+    );
+  }, [formData.additional_requirements, handleRemoveRequirement]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -365,40 +406,7 @@ const ProjectForm = ({ onSubmit }) => {
               Ekle
             </button>
           </div>
-          {formData.additional_requirements.length > 0 && (
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-              {formData.additional_requirements.map((req, index) => (
-                <span 
-                  key={index} 
-                  style={{
-                    background: 'rgba(255, 255, 255, 0.2)',
-                    padding: '0.25rem 0.5rem',
-                    borderRadius: '12px',
-                    fontSize: '0.9rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.25rem'
-                  }}
-                >
-                  {req}
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveRequirement(index)}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      color: 'white',
-                      cursor: 'pointer',
-                      fontSize: '1.2rem',
-                      lineHeight: 1
-                    }}
-                  >
-                    ×
-                  </button>
-                </span>
-              ))}
-            </div>
-          )}
+          {memoizedRequirementsList}
         </div>
 
         <div className="form-group">
