@@ -61,3 +61,7 @@
 ## 2025-04-08 - Memoize Derived Mappings to Prevent Keystroke Lag
 **Learning:** In components like `AgentCard.js` that contain both text inputs and derived array mappings (e.g., mapping `agent.skills` to chips with string replacements), typing in the inputs triggers a re-render that re-allocates strings and React nodes for the chips on every keystroke. This causes measurable typing lag.
 **Action:** Use `useMemo` on the derived mapped elements (e.g. `memoizedSkillChips`) using the array data as the dependency. This isolates the expensive string operations (`.replace()`) and React element creation from unrelated state updates (like typing).
+
+## 2026-04-12 - Extract Derived String Replaces on Arrays in Render loop to useMemo
+**Learning:** In components rendering multiple string operations in a mapping array (like `agent.skills.join(', ').replace(/-/g, ' ')` in `MultiAgentConfigurator.js`), performing these derivations in line inside a frequent render loop can cause severe object allocation overhead and GC thrashing.
+**Action:** Use `useMemo` or perform these replacements statically outside of the main loop where possible, although for `MultiAgentConfigurator` it's executed on button click (cold path) so it's not a severe issue, but in forms like `ProjectForm.js`, extracting inline array mappings like `formData.additional_requirements.map` into a `useMemo` hook reduces UI lag during text input typing.
