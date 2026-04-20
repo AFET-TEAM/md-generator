@@ -208,34 +208,6 @@ const SkillSelector = ({ selectedSkills, onSkillsChange }) => {
     );
   }, [selectedSkills, toggleSkill]);
 
-  // Performance Optimization: Memoize the selected skill tags to avoid O(N) array slicing,
-  // mapping, and React element creation on every keystroke during search filtering.
-  const memoizedSelectedTags = useMemo(() => {
-    if (selectedSkills.length === 0) return null;
-    return (
-      <div className="selected-skills-summary">
-        <span className="selected-count">{selectedSkills.length} skill secili</span>
-        <div className="selected-skill-tags">
-          {selectedSkills.slice(0, 20).map(skillId => (
-            <span key={skillId} className="skill-tag">
-              {getSkillName(skillId)}
-              <button
-                type="button"
-                onClick={() => toggleSkill(skillId)}
-                className="skill-tag-remove"
-              >
-                x
-              </button>
-            </span>
-          ))}
-          {selectedSkills.length > 20 && (
-            <span className="skill-tag-more">+{selectedSkills.length - 20} daha...</span>
-          )}
-        </div>
-      </div>
-    );
-  }, [selectedSkills, toggleSkill]);
-
   return (
     <div className="skill-selector">
       <div className="skill-search">
