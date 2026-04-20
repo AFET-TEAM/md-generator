@@ -177,9 +177,36 @@ const SkillSelector = ({ selectedSkills, onSkillsChange }) => {
     return counts;
   }, [selectedSkills, searchTerm, filteredCategories, selectedSkillsSet]);
 
-  const getSkillName = (skillId) => {
-    return SKILL_NAME_MAP[skillId] || skillId;
-  };
+  // Performance Optimization: Memoize selected skills tags to prevent O(N) slicing, mapping,
+  // and React node recreation on every keystroke when typing in the search input.
+  const memoizedSelectedSkillTags = useMemo(() => {
+    if (selectedSkills.length === 0) return null;
+    return (
+      <div className="selected-skills-summary">
+        <span className="selected-count">{selectedSkills.length} skill secili</span>
+        <div className="selected-skill-tags">
+          {selectedSkills.slice(0, 20).map(skillId => {
+            const skillName = SKILL_NAME_MAP[skillId] || skillId;
+            return (
+              <span key={skillId} className="skill-tag">
+                {skillName}
+                <button
+                  type="button"
+                  onClick={() => toggleSkill(skillId)}
+                  className="skill-tag-remove"
+                >
+                  x
+                </button>
+              </span>
+            );
+          })}
+          {selectedSkills.length > 20 && (
+            <span className="skill-tag-more">+{selectedSkills.length - 20} daha...</span>
+          )}
+        </div>
+      </div>
+    );
+  }, [selectedSkills, toggleSkill]);
 
   // Performance Optimization: Memoize the selected skill tags to avoid O(N) array slicing,
   // mapping, and React element creation on every keystroke during search filtering.
@@ -221,7 +248,7 @@ const SkillSelector = ({ selectedSkills, onSkillsChange }) => {
         />
       </div>
 
-      {memoizedSelectedTags}
+      {memoizedSelectedSkillTags}
 
       <div className="skill-categories">
         {filteredCategories.map(category => {
