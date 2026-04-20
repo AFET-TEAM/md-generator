@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import AgentCard from './AgentCard';
 import ConfigFileManager from './ConfigFileManager';
 import { AGENT_TEMPLATES, CONFIG_FILE_TYPES } from '../data/skills';
@@ -70,13 +70,15 @@ const MultiAgentConfigurator = ({ projectData, onBack }) => {
   // on every keystroke when typing in the "Genel Talimatlar" textarea or other fields.
   const handleResetConfigs = useCallback(() => setGeneratedConfigs(null), []);
 
-  const toggleConfigFile = (configId) => {
-    if (selectedConfigFiles.includes(configId)) {
-      setSelectedConfigFiles(selectedConfigFiles.filter(id => id !== configId));
-    } else {
-      setSelectedConfigFiles([...selectedConfigFiles, configId]);
-    }
-  };
+  const toggleConfigFile = useCallback((configId) => {
+    setSelectedConfigFiles(prev => {
+      if (prev.includes(configId)) {
+        return prev.filter(id => id !== configId);
+      } else {
+        return [...prev, configId];
+      }
+    });
+  }, []);
 
   const validateAgents = () => {
     for (let i = 0; i < agents.length; i++) {
@@ -497,25 +499,27 @@ const MultiAgentConfigurator = ({ projectData, onBack }) => {
         <p style={{ marginBottom: '1rem', opacity: 0.8, fontSize: '0.9rem' }}>
           Hangi AI araci icin yapilandirma dosyasi olusturmak istediginizi secin:
         </p>
-        <div className="config-file-grid">
-          {CONFIG_FILE_TYPES.map(config => (
-            <label
-              key={config.id}
-              className={`config-file-option ${selectedConfigFiles.includes(config.id) ? 'selected' : ''}`}
-            >
-              <input
-                type="checkbox"
-                checked={selectedConfigFiles.includes(config.id)}
-                onChange={() => toggleConfigFile(config.id)}
-              />
-              <div className="config-file-info">
-                <span className="config-file-name">{config.name}</span>
-                <span className="config-file-desc">{config.description}</span>
-                <span className="config-file-tool">{config.targetTool}</span>
-              </div>
-            </label>
-          ))}
-        </div>
+        {useMemo(() => (
+          <div className="config-file-grid">
+            {CONFIG_FILE_TYPES.map(config => (
+              <label
+                key={config.id}
+                className={`config-file-option ${selectedConfigFiles.includes(config.id) ? 'selected' : ''}`}
+              >
+                <input
+                  type="checkbox"
+                  checked={selectedConfigFiles.includes(config.id)}
+                  onChange={() => toggleConfigFile(config.id)}
+                />
+                <div className="config-file-info">
+                  <span className="config-file-name">{config.name}</span>
+                  <span className="config-file-desc">{config.description}</span>
+                  <span className="config-file-tool">{config.targetTool}</span>
+                </div>
+              </label>
+            ))}
+          </div>
+        ), [selectedConfigFiles, toggleConfigFile])}
       </div>
 
       {/* Generate Button */}
