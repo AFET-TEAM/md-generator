@@ -65,3 +65,7 @@
 ## 2026-04-12 - Extract Derived String Replaces on Arrays in Render loop to useMemo
 **Learning:** In components rendering multiple string operations in a mapping array (like `agent.skills.join(', ').replace(/-/g, ' ')` in `MultiAgentConfigurator.js`), performing these derivations in line inside a frequent render loop can cause severe object allocation overhead and GC thrashing.
 **Action:** Use `useMemo` or perform these replacements statically outside of the main loop where possible, although for `MultiAgentConfigurator` it's executed on button click (cold path) so it's not a severe issue, but in forms like `ProjectForm.js`, extracting inline array mappings like `formData.additional_requirements.map` into a `useMemo` hook reduces UI lag during text input typing.
+
+## 2023-10-27 - Memoize Render List Instead of Inline Maps for Components
+**Learning:** Extracting an inline `agents.map(...)` block in `MultiAgentConfigurator.js` into a `useMemo` block that uses a traditional `for` loop avoids creating a new array reference and multiple closures on every render. Doing this directly prevents rendering lag when typing in unrelated form fields since it skips DOM node object recreation entirely.
+**Action:** Identify inline `array.map()` operations inside complex React forms or configurators and extract them to `useMemo` hooks using a `for` loop if the array mapping outputs elements representing a list of heavy child components.

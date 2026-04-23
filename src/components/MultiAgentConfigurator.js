@@ -427,6 +427,26 @@ const MultiAgentConfigurator = ({ projectData, onBack }) => {
     return content;
   };
 
+  // Performance Optimization: Use useMemo with a traditional for loop to render the agents list.
+  // This minimizes allocation overhead and function call costs compared to inline .map() calls,
+  // preventing the recreation of DOM node objects during unrelated state updates (like typing in the global instructions textarea).
+  const memoizedAgentsList = useMemo(() => {
+    const agentElements = [];
+    for (let i = 0; i < agents.length; i++) {
+      const agent = agents[i];
+      agentElements.push(
+        <AgentCard
+          key={agent.id}
+          agent={agent}
+          index={i}
+          onUpdate={updateAgent}
+          onRemove={removeAgent}
+        />
+      );
+    }
+    return agentElements;
+  }, [agents, updateAgent, removeAgent]);
+
   return (
     <div className="multi-agent-configurator">
       <div className="configurator-header">
@@ -481,15 +501,7 @@ const MultiAgentConfigurator = ({ projectData, onBack }) => {
         </div>
 
         <div className="agents-list">
-          {agents.map((agent, index) => (
-            <AgentCard
-              key={agent.id}
-              agent={agent}
-              index={index}
-              onUpdate={updateAgent}
-              onRemove={removeAgent}
-            />
-          ))}
+          {memoizedAgentsList}
         </div>
       </div>
 
