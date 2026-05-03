@@ -43,6 +43,10 @@ function App() {
     setLoading(true);
     setError(null);
 
+    // Performance Optimization: Preload the lazy-loaded RulesetDisplay component
+    // in the background while the API request is in flight to reduce perceived latency.
+    import('./components/RulesetDisplay').catch(() => {});
+
     try {
       const response = await axios.post(`${API_BASE_URL}/generate-ruleset`, projectData);
       setRuleset(response.data);
@@ -107,6 +111,8 @@ function App() {
           <button
             className={`mode-tab ${activeMode === 'multi-agent' ? 'active' : ''}`}
             onClick={() => handleModeChange('multi-agent')}
+            onMouseEnter={() => import('./components/MultiAgentConfigurator').catch(() => {})}
+            onFocus={() => import('./components/MultiAgentConfigurator').catch(() => {})}
           >
             Multi-Agent Yapilandirma
           </button>
