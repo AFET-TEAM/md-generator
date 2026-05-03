@@ -69,3 +69,6 @@
 ## 2023-10-27 - Memoize Render List Instead of Inline Maps for Components
 **Learning:** Extracting an inline `agents.map(...)` block in `MultiAgentConfigurator.js` into a `useMemo` block that uses a traditional `for` loop avoids creating a new array reference and multiple closures on every render. Doing this directly prevents rendering lag when typing in unrelated form fields since it skips DOM node object recreation entirely.
 **Action:** Identify inline `array.map()` operations inside complex React forms or configurators and extract them to `useMemo` hooks using a `for` loop if the array mapping outputs elements representing a list of heavy child components.
+## 2024-05-01 - Avoid Array.prototype.filter for Removing Array Items
+**Learning:** In hot paths or frequent callbacks (like `toggleSkill` in `SkillSelector.js`), using `.filter()` to remove an item creates overhead from function calls and iterating the entire array. When removing a single known item, `indexOf` combined with `splice` on a shallow copy avoids full array traversal.
+**Action:** For user-triggered state updates that remove items from large arrays where performance is critical, prefer `indexOf` + `splice` over `.filter()`. Note: Do not apply this micro-optimization indiscriminately to cold paths or small arrays.
