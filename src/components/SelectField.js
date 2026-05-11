@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 
 const SelectField = ({
   id,
@@ -7,9 +7,20 @@ const SelectField = ({
   value,
   onChange,
   required = false,
-  options = [],
+  options,
   children
 }) => {
+  // Performance Optimization: Memoize the mapped options to prevent creating
+  // new React elements on every render of SelectField (e.g., when 'value' changes).
+  const memoizedOptions = useMemo(() => {
+    if (children) return null;
+    return options?.map(option => (
+      <option key={option} value={option}>
+        {option}
+      </option>
+    ));
+  }, [options, children]);
+
   return (
     <div className="form-group">
       <label htmlFor={id}>
@@ -23,11 +34,7 @@ const SelectField = ({
         required={required}
       >
         <option value="">Seçiniz...</option>
-        {children || options?.map(option => (
-          <option key={option} value={option}>
-            {option}
-          </option>
-        ))}
+        {children || memoizedOptions}
       </select>
     </div>
   );

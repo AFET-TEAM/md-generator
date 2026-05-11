@@ -72,3 +72,7 @@
 ## 2024-05-01 - Avoid Array.prototype.filter for Removing Array Items
 **Learning:** In hot paths or frequent callbacks (like `toggleSkill` in `SkillSelector.js`), using `.filter()` to remove an item creates overhead from function calls and iterating the entire array. When removing a single known item, `indexOf` combined with `splice` on a shallow copy avoids full array traversal.
 **Action:** For user-triggered state updates that remove items from large arrays where performance is critical, prefer `indexOf` + `splice` over `.filter()`. Note: Do not apply this micro-optimization indiscriminately to cold paths or small arrays.
+
+## 2024-05-06 - Preserve React.memo When Replacing Component Files
+**Learning:** When completely replacing a component file (like `SelectField.js`) via bash commands, it is easy to accidentally drop the `React.memo` wrapping on the export. This will cause related performance tests that check the component's `$$typeof` to fail and potentially re-introduce the performance issue the component was meant to solve.
+**Action:** When updating a React component, specifically check if the original export was wrapped in `React.memo(Component)` and ensure it is preserved in the final version of the file.
