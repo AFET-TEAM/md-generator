@@ -46,8 +46,10 @@ const MultiAgentConfigurator = ({ projectData, onBack }) => {
   // Performance Optimization: Use useCallback to ensure stable function reference
   // This allows AgentCard (memoized) to skip re-renders unless its own props change
 
-  const updateAgent = useCallback((index, updatedAgentOrFn) => {
+  const updateAgent = useCallback((agentId, updatedAgentOrFn) => {
     setAgents(prevAgents => {
+      const index = prevAgents.findIndex(a => a.id === agentId);
+      if (index === -1) return prevAgents;
       const newAgents = [...prevAgents];
       const currentAgent = newAgents[index];
       const updatedAgent = typeof updatedAgentOrFn === 'function'
@@ -58,10 +60,10 @@ const MultiAgentConfigurator = ({ projectData, onBack }) => {
     });
   }, []);
 
-  const removeAgent = useCallback((index) => {
+  const removeAgent = useCallback((agentId) => {
     setAgents(prevAgents => {
       if (prevAgents.length <= 1) return prevAgents;
-      return prevAgents.filter((_, i) => i !== index);
+      return prevAgents.filter(a => a.id !== agentId);
     });
   }, []);
 
