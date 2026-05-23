@@ -33,7 +33,7 @@ function App() {
     checkApiStatus();
   }, []);
 
-  const handleFormSubmit = async (projectData) => {
+  const handleFormSubmit = React.useCallback(async (projectData) => {
     if (activeMode === 'multi-agent') {
       // In multi-agent mode, pass project data to the configurator
       setProjectDataForAgents(projectData);
@@ -56,7 +56,7 @@ function App() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [activeMode]);
 
   // Performance Optimization: useCallback ensures the function reference remains stable
   // This prevents the React.memo in RulesetDisplay and ConfigFileManager from being busted.
@@ -72,6 +72,11 @@ function App() {
     setError(null);
     setProjectDataForAgents(null);
   };
+
+  // Performance Optimization: Stable callback for MultiAgentConfigurator onBack
+  const handleBackFromMultiAgent = React.useCallback(() => {
+    setProjectDataForAgents(null);
+  }, []);
 
   return (
     <div className="App">
@@ -174,7 +179,7 @@ function App() {
                   </div>
                 </div>
 
-                <ProjectForm onSubmit={(data) => setProjectDataForAgents(data)} />
+                <ProjectForm onSubmit={setProjectDataForAgents} />
               </div>
             )}
 
@@ -189,7 +194,7 @@ function App() {
                 }>
                   <MultiAgentConfigurator
                     projectData={projectDataForAgents}
-                    onBack={() => setProjectDataForAgents(null)}
+                    onBack={handleBackFromMultiAgent}
                   />
                 </Suspense>
               </ChunkErrorBoundary>
