@@ -13,4 +13,6 @@ const LoadingSpinner = ({ title, message, subMessage }) => {
   );
 };
 
-export default LoadingSpinner;
+// Performance Optimization: Wrapped in React.memo to prevent unnecessary re-renders
+// when the parent component updates while the spinner is visible.
+export default React.memo(LoadingSpinner);

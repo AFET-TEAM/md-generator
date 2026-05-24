@@ -33,7 +33,10 @@ function App() {
     checkApiStatus();
   }, []);
 
-  const handleFormSubmit = async (projectData) => {
+  // Performance Optimization: useCallback ensures the function reference remains stable
+  // This prevents the React.memo in ProjectForm from being busted during App.js re-renders
+  // caused by background processes (like the initial apiStatus polling).
+  const handleFormSubmit = React.useCallback(async (projectData) => {
     if (activeMode === 'multi-agent') {
       // In multi-agent mode, pass project data to the configurator
       setProjectDataForAgents(projectData);
@@ -56,7 +59,7 @@ function App() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [activeMode]);
 
   // Performance Optimization: useCallback ensures the function reference remains stable
   // This prevents the React.memo in RulesetDisplay and ConfigFileManager from being busted.
@@ -174,7 +177,9 @@ function App() {
                   </div>
                 </div>
 
-                <ProjectForm onSubmit={(data) => setProjectDataForAgents(data)} />
+                {/* Performance Optimization: Pass state setter directly instead of inline arrow function
+                    to maintain a stable reference and preserve ProjectForm's React.memo */}
+                <ProjectForm onSubmit={setProjectDataForAgents} />
               </div>
             )}
 
