@@ -76,3 +76,6 @@
 ## 2024-05-06 - Preserve React.memo When Replacing Component Files
 **Learning:** When completely replacing a component file (like `SelectField.js`) via bash commands, it is easy to accidentally drop the `React.memo` wrapping on the export. This will cause related performance tests that check the component's `$$typeof` to fail and potentially re-introduce the performance issue the component was meant to solve.
 **Action:** When updating a React component, specifically check if the original export was wrapped in `React.memo(Component)` and ensure it is preserved in the final version of the file.
+## 2026-06-25 - Stabilize Props Before Adding React.memo
+**Learning:** Wrapping a large, expensive component (like `ProjectForm`) in `React.memo` provides no benefit if the parent component (`App.js`) passes inline or unstable callback functions to it (e.g. `<ProjectForm onSubmit={(data) => setProjectDataForAgents(data)} />`). This defeats the shallow comparison check of `React.memo` and causes the child component to re-render anyway.
+**Action:** Before optimizing a component with `React.memo`, always verify and stabilize the props passed to it by the parent component using `useCallback` or by passing the stable `setState` dispatcher directly.
