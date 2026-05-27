@@ -76,3 +76,6 @@
 ## 2024-05-06 - Preserve React.memo When Replacing Component Files
 **Learning:** When completely replacing a component file (like `SelectField.js`) via bash commands, it is easy to accidentally drop the `React.memo` wrapping on the export. This will cause related performance tests that check the component's `$$typeof` to fail and potentially re-introduce the performance issue the component was meant to solve.
 **Action:** When updating a React component, specifically check if the original export was wrapped in `React.memo(Component)` and ensure it is preserved in the final version of the file.
+## 2024-05-27 - [Optimization: React.memo on ProjectForm and useProjectOptions Hook Implementation]
+**Learning:** `ProjectForm` re-rendered unnecessarily heavily and initiated redundant API calls when it managed its own `useProjectOptions` API fetch during mode switching. Unwrapping it and utilizing the `useProjectOptions` hook at the `App.js` level prevented UI lag, flicker, and duplicate network requests while persisting data across component unmounts.
+**Action:** When a heavy component frequently unmounts and remounts (e.g., between tabs or views), lift the initial API data fetching state up or use a cached hook, and pass data as stable references to a `React.memo` wrapped component.

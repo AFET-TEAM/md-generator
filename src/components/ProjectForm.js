@@ -1,39 +1,8 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import axios from 'axios';
-import API_BASE_URL from '../config/api';
+import React, { useState, useCallback, useMemo } from 'react';
 import SelectField from './SelectField';
 
-const FALLBACK_OPTIONS = {
-  categories: ['frontend', 'backend', 'fullstack'],
-  frontend_options: {
-    frameworks: ['React', 'Vue.js', 'Angular', 'Svelte', 'Next.js'],
-    styling_approaches: ['CSS', 'SCSS/SASS', 'Styled Components', 'Tailwind CSS'],
-    state_management: ['useState', 'Zustand', 'Redux Toolkit', 'TanStack Query'],
-    http_clients: ['Fetch API', 'Axios', 'TanStack Query', 'SWR'],
-    ui_libraries: ['None', 'Material-UI', 'Ant Design', 'Chakra UI'],
-    build_tools: ['Vite', 'Webpack', 'Next.js', 'Create React App'],
-    testing_frameworks: ['Jest', 'Vitest', 'Cypress', 'Playwright']
-  },
-  backend_options: {
-    languages: ['Python', 'JavaScript/Node.js', 'Java', 'C#', 'Go'],
-    frameworks: ['FastAPI', 'Django', 'Express.js', 'Spring Boot'],
-    databases: ['PostgreSQL', 'MySQL', 'MongoDB', 'Redis'],
-    auth_methods: ['JWT', 'Session-based', 'OAuth 2.0', 'Auth0'],
-    api_styles: ['REST', 'GraphQL', 'gRPC'],
-    orm_tools: ['Prisma', 'TypeORM', 'Sequelize', 'SQLAlchemy']
-  },
-  common_options: {
-    project_types: ['Web Application', 'Mobile App', 'API/Microservice', 'CLI Tool'],
-    deployment_platforms: ['AWS', 'Vercel', 'Netlify', 'Heroku'],
-    code_styles: ['Standard', 'Prettier', 'ESLint', 'Airbnb']
-  }
-};
 
-// Performance Optimization: Cache the API response to prevent redundant network requests
-// when switching between Single and Multi-Agent modes which remounts the component.
-let optionsCachePromise = null;
-
-const ProjectForm = ({ onSubmit }) => {
+const ProjectForm = ({ onSubmit, projectOptions }) => {
   const [formData, setFormData] = useState({
     // Genel bilgiler
     project_category: '',
@@ -64,33 +33,7 @@ const ProjectForm = ({ onSubmit }) => {
     notes: ''
   });
 
-  const [projectOptions, setProjectOptions] = useState({
-    categories: [],
-    frontend_options: {},
-    backend_options: {},
-    common_options: {}
-  });
-
   const [additionalRequirement, setAdditionalRequirement] = useState('');
-
-  useEffect(() => {
-    // Load available options from API or cache
-    const loadOptions = async () => {
-      if (!optionsCachePromise) {
-        optionsCachePromise = axios.get(`${API_BASE_URL}/project-categories`)
-          .then(response => response.data)
-          .catch(error => {
-            console.error('Error loading options:', error);
-            return FALLBACK_OPTIONS;
-          });
-      }
-
-      const data = await optionsCachePromise;
-      setProjectOptions(data);
-    };
-
-    loadOptions();
-  }, []);
 
   // Performance Optimization: Use useCallback to maintain stable reference
   // so that SelectField components do not re-render unnecessarily.
@@ -429,4 +372,6 @@ const ProjectForm = ({ onSubmit }) => {
   );
 };
 
-export default ProjectForm;
+// Performance Optimization: Wrapped in React.memo to prevent unnecessary re-renders
+// when unrelated parent state (like API status in App.js) updates.
+export default React.memo(ProjectForm);
