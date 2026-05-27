@@ -5,6 +5,7 @@ import ProjectForm from './components/ProjectForm';
 import LoadingSpinner from './components/LoadingSpinner';
 import ChunkErrorBoundary from './components/ChunkErrorBoundary';
 import API_BASE_URL from './config/api';
+import useProjectOptions from './hooks/useProjectOptions';
 import './App.css';
 
 // Lazy load MultiAgentConfigurator and RulesetDisplay
@@ -18,6 +19,8 @@ function App() {
   const [apiStatus, setApiStatus] = useState(null);
   const [activeMode, setActiveMode] = useState('single'); // 'single' or 'multi-agent'
   const [projectDataForAgents, setProjectDataForAgents] = useState(null);
+
+  const projectOptions = useProjectOptions();
 
   // Check API status on component mount
   useEffect(() => {
@@ -33,7 +36,7 @@ function App() {
     checkApiStatus();
   }, []);
 
-  const handleFormSubmit = async (projectData) => {
+  const handleFormSubmit = React.useCallback(async (projectData) => {
     if (activeMode === 'multi-agent') {
       // In multi-agent mode, pass project data to the configurator
       setProjectDataForAgents(projectData);
@@ -56,7 +59,7 @@ function App() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [activeMode]);
 
   // Performance Optimization: useCallback ensures the function reference remains stable
   // This prevents the React.memo in RulesetDisplay and ConfigFileManager from being busted.
@@ -133,7 +136,7 @@ function App() {
         {activeMode === 'single' && (
           <>
             {!ruleset && !loading && (
-              <ProjectForm onSubmit={handleFormSubmit} />
+              <ProjectForm onSubmit={handleFormSubmit} projectOptions={projectOptions} />
             )}
 
             {ruleset && !loading && (
@@ -174,7 +177,7 @@ function App() {
                   </div>
                 </div>
 
-                <ProjectForm onSubmit={(data) => setProjectDataForAgents(data)} />
+                <ProjectForm onSubmit={setProjectDataForAgents} projectOptions={projectOptions} />
               </div>
             )}
 
