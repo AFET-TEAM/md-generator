@@ -76,3 +76,10 @@
 ## 2024-05-06 - Preserve React.memo When Replacing Component Files
 **Learning:** When completely replacing a component file (like `SelectField.js`) via bash commands, it is easy to accidentally drop the `React.memo` wrapping on the export. This will cause related performance tests that check the component's `$$typeof` to fail and potentially re-introduce the performance issue the component was meant to solve.
 **Action:** When updating a React component, specifically check if the original export was wrapped in `React.memo(Component)` and ensure it is preserved in the final version of the file.
+## 2026-05-30 - Identify Stable State Setters Before using useCallback
+**Learning:** When planning to stabilize a callback (like `handleFormSubmit` in `App.js`) using `useCallback`, assuming a state setter (like `setProjectDataForAgents`) is inherently stable is dangerous if you haven't explicitly verified its origin. While `useState` setters are stable, custom functions acting as setters might not be.
+**Action:** Always verify the definition of functions and variables using `grep` or `sed` before assuming they do not need to be included in the `useCallback` dependency array.
+
+## 2026-05-30 - Prevent defeating React.memo with Inline Arrow Functions in Props
+**Learning:** Passing an inline arrow function (e.g., `onSubmit={(data) => setProjectDataForAgents(data)}`) to a child component (like `ProjectForm`) creates a new function reference on every render. If the child component is wrapped in `React.memo`, this new reference will defeat the memoization, causing the child to re-render unnecessarily whenever the parent re-renders (e.g., due to unrelated state changes like `apiStatus` or `loading`).
+**Action:** Always pass stable references (like `useState` setters directly, or functions wrapped in `useCallback`) to child components that are intended to be memoized. E.g., `onSubmit={setProjectDataForAgents}`.
