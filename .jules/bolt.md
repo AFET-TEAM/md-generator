@@ -76,3 +76,6 @@
 ## 2024-05-06 - Preserve React.memo When Replacing Component Files
 **Learning:** When completely replacing a component file (like `SelectField.js`) via bash commands, it is easy to accidentally drop the `React.memo` wrapping on the export. This will cause related performance tests that check the component's `$$typeof` to fail and potentially re-introduce the performance issue the component was meant to solve.
 **Action:** When updating a React component, specifically check if the original export was wrapped in `React.memo(Component)` and ensure it is preserved in the final version of the file.
+## 2025-10-26 - Prevent Re-rendering of Form Components When Unrelated State Updates
+**Learning:** `ProjectForm` re-rendered unnecessarily whenever `apiStatus` polling in `App.js` updated or the active mode changed, causing potential lag in text input typing because its reference wasn't memoized and its props (like `onSubmit`) had unstable inline arrow function definitions in multi-agent mode.
+**Action:** Wrap large/heavy form components in `React.memo` and ensure that the parent passes perfectly stable callback references (e.g., direct state setters from `useState` or via `React.useCallback` with correct dependencies) to avoid busting the memoization cache.
