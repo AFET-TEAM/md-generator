@@ -33,7 +33,7 @@ const FALLBACK_OPTIONS = {
 // when switching between Single and Multi-Agent modes which remounts the component.
 let optionsCachePromise = null;
 
-const ProjectForm = ({ onSubmit }) => {
+const ProjectForm = React.memo(({ onSubmit }) => {
   const [formData, setFormData] = useState({
     // Genel bilgiler
     project_category: '',
@@ -427,6 +427,6 @@ const ProjectForm = ({ onSubmit }) => {
       </button>
     </form>
   );
-};
+});
 
 export default ProjectForm;
