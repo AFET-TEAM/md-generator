@@ -76,3 +76,7 @@
 ## 2024-05-06 - Preserve React.memo When Replacing Component Files
 **Learning:** When completely replacing a component file (like `SelectField.js`) via bash commands, it is easy to accidentally drop the `React.memo` wrapping on the export. This will cause related performance tests that check the component's `$$typeof` to fail and potentially re-introduce the performance issue the component was meant to solve.
 **Action:** When updating a React component, specifically check if the original export was wrapped in `React.memo(Component)` and ensure it is preserved in the final version of the file.
+
+## 2024-05-08 - Prevent Heavy Parent Renders During Component Mode Swaps
+**Learning:** In top-level components (like `App.js`) managing state for forms and configurations (like `MultiAgentConfigurator`), passing an inline callback (e.g. `onSubmit={(data) => setProjectDataForAgents(data)}`) instead of a stable reference to a child component (like `ProjectForm`) defeats the child's `React.memo()`. This causes the child component to re-render completely whenever any parent state changes.
+**Action:** When child components are wrapped in `React.memo` (like `ProjectForm`), verify that their props in the parent component (like `onSubmit` in `App.js`) are stable. Pass state setter functions directly (like `onSubmit={setProjectDataForAgents}`) or use `useCallback` to ensure stability.
