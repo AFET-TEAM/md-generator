@@ -14,23 +14,22 @@ const AgentCard = ({ agent, onUpdate, onRemove, index }) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const [showSkillSelector, setShowSkillSelector] = useState(false);
 
-  // Pass index to onUpdate to avoid creating a new function in the parent for each item
-  // Performance Optimization: useCallback ensures the function reference remains stable
-  // This prevents unnecessary re-renders of the input fields if they are memoized or if we want to avoid recreating the function.
+  // Performance Optimization: Use agent.id instead of index for callbacks.
+  // This prevents O(N) recreations of callback functions when elements are added or removed,
+  // avoiding cascading re-renders of expensive child components like SkillSelector
+  // that would otherwise happen if their props changed due to index shifts.
   const handleFieldChange = useCallback((field, value) => {
-    onUpdate(index, (prevAgent) => ({ ...prevAgent, [field]: value }));
-  }, [index, onUpdate]);
+    onUpdate(agent.id, (prevAgent) => ({ ...prevAgent, [field]: value }));
+  }, [agent.id, onUpdate]);
 
-  // Performance Optimization: Use stable callback for skills update
-  // This prevents SkillSelector from re-rendering when other fields (like name) change
   const handleSkillsChange = useCallback((newSkills) => {
-    onUpdate(index, (prevAgent) => ({ ...prevAgent, skills: newSkills }));
-  }, [index, onUpdate]);
+    onUpdate(agent.id, (prevAgent) => ({ ...prevAgent, skills: newSkills }));
+  }, [agent.id, onUpdate]);
 
   const handleTemplateSelect = useCallback((templateId) => {
     const template = AGENT_TEMPLATES.find(t => t.id === templateId);
     if (template) {
-      onUpdate(index, (prevAgent) => ({
+      onUpdate(agent.id, (prevAgent) => ({
         ...prevAgent,
         name: template.name,
         description: template.description,
@@ -38,7 +37,7 @@ const AgentCard = ({ agent, onUpdate, onRemove, index }) => {
         skills: template.defaultSkills,
       }));
     }
-  }, [index, onUpdate]);
+  }, [agent.id, onUpdate]);
 
   // Performance Optimization: Memoize skill chips to prevent O(N) regex replacements
   // and React node recreations on every keystroke when typing in text inputs.
@@ -73,7 +72,7 @@ const AgentCard = ({ agent, onUpdate, onRemove, index }) => {
           <button
             type="button"
             className="agent-remove-btn"
-            onClick={() => onRemove(index)}
+            onClick={() => onRemove(agent.id)}
           >
             Kaldir
           </button>
