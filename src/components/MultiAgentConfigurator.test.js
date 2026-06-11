@@ -44,10 +44,10 @@ describe('MultiAgentConfigurator Performance Optimization', () => {
 
     // Trigger update on Agent 0
     // We invoke onUpdate directly from the captured props to simulate child interaction.
-    // Signature: onUpdate(index, updatedAgent)
+    // Signature: onUpdate(id, updatedAgent)
     const newName = 'Updated Name';
     act(() => {
-        propsAgent0_Before.onUpdate(0, { ...propsAgent0_Before.agent, name: newName });
+        propsAgent0_Before.onUpdate(propsAgent0_Before.agent.id, { ...propsAgent0_Before.agent, name: newName });
     });
 
     // Parent re-renders.
