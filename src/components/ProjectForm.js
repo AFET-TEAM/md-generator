@@ -429,4 +429,4 @@ const ProjectForm = ({ onSubmit }) => {
   );
 };
 
-export default ProjectForm;
+export default React.memo(ProjectForm);
