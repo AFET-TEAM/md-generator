@@ -80,3 +80,7 @@
 ## 2024-05-18 - [List Callbacks Optimization]
 **Learning:** Using array indices as dependencies in `useCallback` for list items invalidates memoized child components when items are added or removed (e.g., removing index 0 causes index 1 to become 0, recreating its callback and busting `React.memo`).
 **Action:** Always use stable unique identifiers (like `item.id`) instead of indices for list item update and remove callbacks to prevent O(N) recreations of callbacks and subsequent re-renders of expensive nested components.
+
+## 2024-05-20 - Ensure Stable Callbacks for React.memo in Lists
+**Learning:** In lists of components wrapped with `React.memo()`, passing unstable callbacks directly defeats memoization. When writing tests to verify performance, the callback invocations used to mock interactions must match the updated signature that uses unique IDs, not indices. Otherwise the tests will fail with expectations mismatch or missing calls.
+**Action:** Always verify the callback signature matches between the child component and its parent list component, especially when using stable IDs vs array indices.
