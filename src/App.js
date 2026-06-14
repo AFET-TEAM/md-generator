@@ -174,7 +174,9 @@ function App() {
                   </div>
                 </div>
 
-                <ProjectForm onSubmit={(data) => setProjectDataForAgents(data)} />
+                {/* Performance Optimization: Pass state setter directly instead of inline arrow function */}
+                {/* This provides a stable reference for onSubmit, allowing React.memo to work on ProjectForm */}
+                <ProjectForm onSubmit={setProjectDataForAgents} />
               </div>
             )}
 
