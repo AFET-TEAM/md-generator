@@ -174,7 +174,7 @@ function App() {
                   </div>
                 </div>
 
-                <ProjectForm onSubmit={(data) => setProjectDataForAgents(data)} />
+                <ProjectForm onSubmit={setProjectDataForAgents} />
               </div>
             )}
 
