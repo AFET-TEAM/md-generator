@@ -33,7 +33,9 @@ function App() {
     checkApiStatus();
   }, []);
 
-  const handleFormSubmit = async (projectData) => {
+  // Performance Optimization: Stabilized onSubmit handler using useCallback.
+  // This prevents breaking the React.memo on ProjectForm when parent state updates independently.
+  const handleFormSubmit = React.useCallback(async (projectData) => {
     if (activeMode === 'multi-agent') {
       // In multi-agent mode, pass project data to the configurator
       setProjectDataForAgents(projectData);
@@ -56,7 +58,7 @@ function App() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [activeMode]);
 
   // Performance Optimization: useCallback ensures the function reference remains stable
   // This prevents the React.memo in RulesetDisplay and ConfigFileManager from being busted.
@@ -174,7 +176,9 @@ function App() {
                   </div>
                 </div>
 
-                <ProjectForm onSubmit={(data) => setProjectDataForAgents(data)} />
+                {/* Performance Optimization: Passed stable state setter directly instead of inline function
+                    to preserve ProjectForm's memoization */}
+                <ProjectForm onSubmit={setProjectDataForAgents} />
               </div>
             )}
 
