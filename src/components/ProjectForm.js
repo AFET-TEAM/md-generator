@@ -429,4 +429,6 @@ const ProjectForm = ({ onSubmit }) => {
   );
 };
 
-export default ProjectForm;
+// Performance Optimization: Wrap ProjectForm in React.memo to prevent unnecessary
+// re-renders due to unrelated state updates in parent component (e.g. API health checks)
+export default React.memo(ProjectForm);
