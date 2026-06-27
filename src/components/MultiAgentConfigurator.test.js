@@ -47,7 +47,9 @@ describe('MultiAgentConfigurator Performance Optimization', () => {
     // Signature: onUpdate(index, updatedAgent)
     const newName = 'Updated Name';
     act(() => {
-        propsAgent0_Before.onUpdate(0, { ...propsAgent0_Before.agent, name: newName });
+        // Mock the callback properly based on how it's implemented.
+        // The MultiAgentConfigurator's updateAgent takes (agentId, updatedAgentOrFn)
+        propsAgent0_Before.onUpdate(propsAgent0_Before.agent.id, { ...propsAgent0_Before.agent, name: newName });
     });
 
     // Parent re-renders.
