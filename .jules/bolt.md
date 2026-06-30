@@ -80,3 +80,6 @@
 ## 2024-05-18 - [List Callbacks Optimization]
 **Learning:** Using array indices as dependencies in `useCallback` for list items invalidates memoized child components when items are added or removed (e.g., removing index 0 causes index 1 to become 0, recreating its callback and busting `React.memo`).
 **Action:** Always use stable unique identifiers (like `item.id`) instead of indices for list item update and remove callbacks to prevent O(N) recreations of callbacks and subsequent re-renders of expensive nested components.
+## 2024-07-02 - Testing `React.memo` Wrapped Components
+**Learning:** When attempting to test `React.memo` components passing mock components with interaction to test stability of callbacks, ensure the test correctly implements the component's signature. In `MultiAgentConfigurator.test.js`, passing the index instead of the `id` when simulating an `onUpdate` broke the test since the parent state updates were expecting an `id` to find and update the agent array.
+**Action:** When creating tests or making optimizations interacting with mock objects, ensure the exact property/argument matches what the tested functionality expects, e.g. ID instead of index.
