@@ -80,3 +80,7 @@
 ## 2024-05-18 - [List Callbacks Optimization]
 **Learning:** Using array indices as dependencies in `useCallback` for list items invalidates memoized child components when items are added or removed (e.g., removing index 0 causes index 1 to become 0, recreating its callback and busting `React.memo`).
 **Action:** Always use stable unique identifiers (like `item.id`) instead of indices for list item update and remove callbacks to prevent O(N) recreations of callbacks and subsequent re-renders of expensive nested components.
+
+## 2024-05-18 - Preserve Child React.memo By Passing Stable Props
+**Learning:** Passing an inline arrow function (like `onSubmit={(data) => setProjectData(data)}`) from a parent (`App.js`) to a child component (`ProjectForm`) causes the child to receive a new function reference on every parent render. This completely defeats `React.memo()` on the child, forcing it to re-render unnecessarily (e.g., when the parent updates non-related state like an initial API health check).
+**Action:** When a child component is wrapped in `React.memo`, ensure all passed props (especially functions) have stable references. Instead of inline arrows, pass the stable `useState` setter directly (e.g., `onSubmit={setProjectData}`) or wrap the callback in `useCallback`.
