@@ -1,5 +1,6 @@
 import React from 'react';
-import { render, screen, fireEvent, act } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { act } from 'react';
 import MultiAgentConfigurator from './MultiAgentConfigurator';
 import AgentCard from './AgentCard';
 
@@ -47,7 +48,7 @@ describe('MultiAgentConfigurator Performance Optimization', () => {
     // Signature: onUpdate(index, updatedAgent)
     const newName = 'Updated Name';
     act(() => {
-        propsAgent0_Before.onUpdate(0, { ...propsAgent0_Before.agent, name: newName });
+        propsAgent0_Before.onUpdate(propsAgent0_Before.agent.id, { ...propsAgent0_Before.agent, name: newName });
     });
 
     // Parent re-renders.
