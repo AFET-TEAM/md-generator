@@ -144,3 +144,7 @@
 ## 2024-06-22 - [React.memo Safety with Callbacks]
 **Learning:** When testing React components for stable callback references, list items relying on index tracking in test overrides can lead to false failures if the application code expects an `id`. Attempting to refactor tests to match an implementation's ID expectation needs careful alignment with test mocking mechanisms.
 **Action:** Always inspect the actual callback signature in the component (`onUpdate(agent.id, ...)`) vs what the test expects (`onUpdate(index, ...)`). If the test needs updating to reflect an implementation change, ensure any mock variables reflect the component state structures rather than blindly updating parameters.
+
+## 2024-06-25 - React.memo Component Bailouts
+**Learning:** In React, passing dynamically generated inline functions (like arrow functions in props) or using unmemoized callbacks directly invalidates `React.memo` wrappers on heavy child components. For example, `ProjectForm` was re-rendering unnecessarily because `handleFormSubmit` and `onSubmit={(data) => setProjectDataForAgents(data)}` were re-creating function references on every render of `App.js`.
+**Action:** Always verify that function props passed to `React.memo` components have stable references by using `useCallback` or passing `setState` variables directly, and verify by writing test assertions or inspecting React Developer Tools.
