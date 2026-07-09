@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import SkillSelector from './SkillSelector';
 import { SKILL_CATEGORIES } from '../data/skills';
