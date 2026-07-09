@@ -104,3 +104,7 @@
 ## 2024-05-18 - Stable Callback Props for React.memo Wrapping
 **Learning:** Even when wrapping a heavy component like `ProjectForm` in `React.memo()`, the memoization is easily broken if the parent component (`App.js`) passes inline functions as props (e.g. `onSubmit={(data) => setProjectDataForAgents(data)}`). Unrelated state updates in the parent (such as initial health check setting `apiStatus`) will cause the inline function to be recreated, breaking the referential equality check in `React.memo` and forcing a re-render of the heavy form.
 **Action:** When applying `React.memo()` to a component, strictly examine all call sites rendering that component. Ensure every prop passed down is a stable reference. Replace inline arrow functions that only call state setters with the setter function directly (`onSubmit={setProjectDataForAgents}`) or wrap handlers in `React.useCallback`.
+
+## 2024-05-19 - React.memo Optimization for App-level Forms
+**Learning:** Heavy components like `ProjectForm` can suffer from unnecessary re-renders when unrelated parent state in `App.js` updates (e.g., resolving `apiStatus` or background tasks). Wrapping the form in `React.memo` effectively isolates it.
+**Action:** Always wrap heavy form components in `React.memo` and ensure that the parent passes perfectly stable callback props (using `useCallback` or direct `setState` references).
