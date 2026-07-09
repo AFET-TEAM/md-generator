@@ -100,3 +100,7 @@
 ## 2026-06-08 - [Fixing App.js React.memo propagation to ProjectForm]
 **Learning:** The `ProjectForm` component was unnecessarily re-rendering on parent updates (e.g., initial `apiStatus` check or typing into form fields when it was part of a larger render tree). Simply wrapping the component export with `React.memo` is insufficient if the props passed to it are not referentially stable.
 **Action:** Always wrap state setter inline functions or non-primitive props with `useCallback` and `useMemo` respectively. Here, `setProjectDataForAgents` was passed securely, while `handleFormSubmit` needed `useCallback([activeMode])`.
+
+## 2024-05-18 - Stable Callback Props for React.memo Wrapping
+**Learning:** Even when wrapping a heavy component like `ProjectForm` in `React.memo()`, the memoization is easily broken if the parent component (`App.js`) passes inline functions as props (e.g. `onSubmit={(data) => setProjectDataForAgents(data)}`). Unrelated state updates in the parent (such as initial health check setting `apiStatus`) will cause the inline function to be recreated, breaking the referential equality check in `React.memo` and forcing a re-render of the heavy form.
+**Action:** When applying `React.memo()` to a component, strictly examine all call sites rendering that component. Ensure every prop passed down is a stable reference. Replace inline arrow functions that only call state setters with the setter function directly (`onSubmit={setProjectDataForAgents}`) or wrap handlers in `React.useCallback`.
