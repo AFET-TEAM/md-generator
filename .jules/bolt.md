@@ -96,3 +96,7 @@
 ## 2024-05-18 - ProjectForm Parent Component Render Optimization
 **Learning:** In large applications with heavy form components like `ProjectForm` that sit at the root level (`App.js`), passing inline functions (like `onSubmit={(data) => setProjectDataForAgents(data)}`) defeats the memoization of the child component. Any state change in the parent (e.g. `apiStatus` updates, mode toggles) will cause the heavy child component to re-render, leading to lag.
 **Action:** Always wrap heavy root-level forms in `React.memo` and pass stable function references (like direct `setState` functions or `useCallback` wrapped functions) for their props to isolate their rendering lifecycle from parent state updates.
+
+## 2026-06-08 - [Fixing App.js React.memo propagation to ProjectForm]
+**Learning:** The `ProjectForm` component was unnecessarily re-rendering on parent updates (e.g., initial `apiStatus` check or typing into form fields when it was part of a larger render tree). Simply wrapping the component export with `React.memo` is insufficient if the props passed to it are not referentially stable.
+**Action:** Always wrap state setter inline functions or non-primitive props with `useCallback` and `useMemo` respectively. Here, `setProjectDataForAgents` was passed securely, while `handleFormSubmit` needed `useCallback([activeMode])`.
