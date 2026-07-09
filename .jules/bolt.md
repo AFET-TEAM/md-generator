@@ -148,3 +148,7 @@
 ## 2024-06-25 - React.memo Component Bailouts
 **Learning:** In React, passing dynamically generated inline functions (like arrow functions in props) or using unmemoized callbacks directly invalidates `React.memo` wrappers on heavy child components. For example, `ProjectForm` was re-rendering unnecessarily because `handleFormSubmit` and `onSubmit={(data) => setProjectDataForAgents(data)}` were re-creating function references on every render of `App.js`.
 **Action:** Always verify that function props passed to `React.memo` components have stable references by using `useCallback` or passing `setState` variables directly, and verify by writing test assertions or inspecting React Developer Tools.
+
+## 2025-01-20 - Memoizing Form Components and Passing Stable Callbacks
+**Learning:** In React applications, heavy form components (like `ProjectForm`) can re-render unnecessarily when the parent component (`App.js`) re-renders due to unrelated state changes (e.g., initial API health checks storing results in `apiStatus`).
+**Action:** Wrap the heavy form component in `React.memo()` and ensure that any callbacks passed as props (like `onSubmit`) are either wrapped in `React.useCallback()` with the correct dependencies or are stable state setters directly passed down (e.g., passing `setProjectData` instead of `(data) => setProjectData(data)`). This prevents cascading re-renders and improves perceived UI latency.
