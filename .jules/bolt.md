@@ -128,3 +128,7 @@
 ## 2026-05-18 - [Child Component Memoization Optimization]
 **Learning:** Using inline arrow functions in parent components (e.g., `onSubmit={(data) => set(data)}`) defeats the memoization of child components (like `ProjectForm`) wrapped in `React.memo`, leading to unnecessary re-renders of the entire form when the parent state changes (e.g., during API health checks or tab switching).
 **Action:** Always pass stable references to child components. Use `React.useCallback` or pass the stable state setter function directly (e.g., `onSubmit={set}`). Also ensure the child component export is correctly wrapped in `React.memo` (e.g., `export default React.memo(ProjectForm)`).
+
+## 2023-10-27 - Preventing React.memo invalidation by stabilizing parent callbacks
+**Learning:** Wrapping a component in `React.memo` is only effective if its props are referentially stable. In React, passing inline arrow functions (like `onSubmit={(data) => setState(data)}`) creates a new function reference on every parent render, completely busting the memoization of the child component.
+**Action:** When applying `React.memo` to optimize a child component, carefully audit the parent's render function to ensure all passed function props are stabilized. Prefer passing stable `useState` setter functions directly or wrapping event handlers in `React.useCallback`.
