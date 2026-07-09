@@ -172,3 +172,8 @@
 ## 2024-07-02 - Testing `React.memo` Wrapped Components
 **Learning:** When attempting to test `React.memo` components passing mock components with interaction to test stability of callbacks, ensure the test correctly implements the component's signature. In `MultiAgentConfigurator.test.js`, passing the index instead of the `id` when simulating an `onUpdate` broke the test since the parent state updates were expecting an `id` to find and update the agent array.
 **Action:** When creating tests or making optimizations interacting with mock objects, ensure the exact property/argument matches what the tested functionality expects, e.g. ID instead of index.
+
+## 2024-07-02 - Stabilizing Callbacks for React.memo
+
+**Learning:** When attempting to optimize performance by wrapping components in `React.memo` (like `ProjectForm`), it is crucial to also stabilize the props passed from parent components (like `App.js`). If a parent passes an inline function (e.g., `onSubmit={(data) => setProjectDataForAgents(data)}`), a new function reference is created on every render, invalidating the child's `React.memo` and causing it to re-render anyway.
+**Action:** When wrapping components in `React.memo`, always verify and stabilize the references of function props passed from parent components using `useCallback` or direct state setter references. Also, take care when updating tests not to conflate unique entity IDs with array indices for update callbacks if the implementation still relies on indices.
