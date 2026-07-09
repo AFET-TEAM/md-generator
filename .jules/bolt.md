@@ -168,3 +168,7 @@
 ## 2024-05-18 - [Optimize ProjectForm Rendering]
 **Learning:** The App component passes inline arrow functions and state functions as props to the heavy child component ProjectForm. Before this optimization, this prevented React.memo from doing anything if applied, and naturally caused ProjectForm to re-render constantly (e.g. on apiStatus checks or tab switching). Ensuring callbacks are stable via React.useCallback and passing state setters (setProjectDataForAgents) directly to children allows React.memo to work effectively on complex layout components.
 **Action:** Wrap top-level stateful handlers (like form submissions) with React.useCallback, pass pure useState setters directly rather than through anonymous arrow functions, and wrap heavy presentational child components with React.memo() to eliminate unnecessary rendering trees when context/unrelated state in parent changes.
+
+## 2024-07-02 - Testing `React.memo` Wrapped Components
+**Learning:** When attempting to test `React.memo` components passing mock components with interaction to test stability of callbacks, ensure the test correctly implements the component's signature. In `MultiAgentConfigurator.test.js`, passing the index instead of the `id` when simulating an `onUpdate` broke the test since the parent state updates were expecting an `id` to find and update the agent array.
+**Action:** When creating tests or making optimizations interacting with mock objects, ensure the exact property/argument matches what the tested functionality expects, e.g. ID instead of index.
