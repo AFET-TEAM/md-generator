@@ -120,3 +120,7 @@
 ## 2024-05-20 - Ensure Stable Callbacks for React.memo in Lists
 **Learning:** In lists of components wrapped with `React.memo()`, passing unstable callbacks directly defeats memoization. When writing tests to verify performance, the callback invocations used to mock interactions must match the updated signature that uses unique IDs, not indices. Otherwise the tests will fail with expectations mismatch or missing calls.
 **Action:** Always verify the callback signature matches between the child component and its parent list component, especially when using stable IDs vs array indices.
+
+## 2026-06-15 - Testing Component Signature Strictness in Mocked Components
+**Learning:** When mocking a React component (like `AgentCard`) in a parent component's test (like `MultiAgentConfigurator.test.js`) to assert callback stability, using test actions (`act`) that interact with mocked callback properties MUST perfectly mirror the child component's prop signatures. For example, if a child component's `onUpdate` uses `id` (e.g. `onUpdate(agent.id, ...)`), the mocked test simulating that call must use the `id`, not an arbitrary `index` like `onUpdate(0, ...)`, or assertions checking object shape/references will fail due to unexpected arguments flowing back to the parent state updater.
+**Action:** When updating a React component's prop signatures for performance (e.g., using `id` instead of `index`), ensure all corresponding mock interactions in performance tests are updated to match the new signature to prevent test failures.
