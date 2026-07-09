@@ -108,3 +108,7 @@
 ## 2024-05-19 - React.memo Optimization for App-level Forms
 **Learning:** Heavy components like `ProjectForm` can suffer from unnecessary re-renders when unrelated parent state in `App.js` updates (e.g., resolving `apiStatus` or background tasks). Wrapping the form in `React.memo` effectively isolates it.
 **Action:** Always wrap heavy form components in `React.memo` and ensure that the parent passes perfectly stable callback props (using `useCallback` or direct `setState` references).
+
+## 2024-05-19 - Isolate Form Components from Parent State Updates
+**Learning:** Heavy form components (like `ProjectForm`) can suffer from severe re-render lag if they are forced to re-render when unrelated parent state changes (e.g., periodic API health checks in `App.js` updating `apiStatus`). If the parent passes down inline functions (like `onSubmit={(data) => set(data)}`) or dynamically recreated callbacks, it defeats any standard memoization attempts on the child component.
+**Action:** Wrap heavy UI form components in `React.memo` and ensure all function props (such as `onSubmit`) passed from the parent are stabilized using either direct state setter references or `useCallback` hooks.
