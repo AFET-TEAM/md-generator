@@ -1,3 +1,7 @@
+## 2024-05-18 - Fix stale test comments and argument signatures
+**Learning:** When implementing a refactor across components (like switching from array indices to IDs for list item callbacks), test files often contain stale comments describing the old signature (e.g. `// Signature: onUpdate(index, updatedAgent)`). Even if the component implementation is correct, failing to update these test arguments causes the test suite to fail or the reviewer to incorrectly flag the change as breaking.
+**Action:** Always read the test files associated with the components being refactored, verify their actual required signatures by checking the updated component code, and update any stale documentation comments in the test to avoid confusion.
+
 ## 2025-01-26 - Pre-compute Search Strings to Avoid Repeated String Allocations
 **Learning:** In React list-filtering loops (like in `SkillSelector`), calling `.toLowerCase()` inside the loop on properties of every list item (especially when combining strings like name + description) causes significant overhead via repeated allocations and string operations on every keystroke.
 **Action:** Pre-compute and store these search strings in a module-level dictionary when the static data is loaded. Use this map in the filter loop. This optimization converted `O(N*M)` string allocations during render to `O(1)`.
