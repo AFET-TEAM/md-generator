@@ -116,3 +116,7 @@
 ## 2024-05-24 - Stabilize Props for Memoized React Components
 **Learning:** Wrapping a component in `React.memo` (like `ProjectForm`) to prevent unnecessary re-renders is completely useless if the parent component (`App.js`) passes inline functions (like `onSubmit={(data) => set(data)}`) or recreated functions (like a non-memoized `handleFormSubmit`) as props. These props change referential equality on every parent render, busting the memoization and causing the heavy child component to re-render anyway.
 **Action:** When applying `React.memo` to a component, strictly examine all instances where it is used and ensure all function props passed to it are perfectly stable. Use `useCallback` for custom handlers, or pass stable `useState` setter functions directly instead of wrapping them in inline arrow functions.
+
+## 2024-05-20 - Ensure Stable Callbacks for React.memo in Lists
+**Learning:** In lists of components wrapped with `React.memo()`, passing unstable callbacks directly defeats memoization. When writing tests to verify performance, the callback invocations used to mock interactions must match the updated signature that uses unique IDs, not indices. Otherwise the tests will fail with expectations mismatch or missing calls.
+**Action:** Always verify the callback signature matches between the child component and its parent list component, especially when using stable IDs vs array indices.
