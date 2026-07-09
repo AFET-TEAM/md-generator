@@ -152,3 +152,7 @@
 ## 2025-01-20 - Memoizing Form Components and Passing Stable Callbacks
 **Learning:** In React applications, heavy form components (like `ProjectForm`) can re-render unnecessarily when the parent component (`App.js`) re-renders due to unrelated state changes (e.g., initial API health checks storing results in `apiStatus`).
 **Action:** Wrap the heavy form component in `React.memo()` and ensure that any callbacks passed as props (like `onSubmit`) are either wrapped in `React.useCallback()` with the correct dependencies or are stable state setters directly passed down (e.g., passing `setProjectData` instead of `(data) => setProjectData(data)`). This prevents cascading re-renders and improves perceived UI latency.
+
+## 2024-05-18 - Avoid Orphaned Test Modifications
+**Learning:** Modifying a component's mock function signature in a test file (e.g. `onUpdate(id, updaterFn)`) without making corresponding updates to the actual parent component implementing that function (`updateAgent` in `MultiAgentConfigurator.js`) will result in test failures or incorrect test logic.
+**Action:** When making isolated performance optimizations (like wrapping `ProjectForm` in `React.memo`), strictly avoid altering unrelated test files or modifying mock function signatures unless it is a direct consequence of the optimization itself. Ensure test changes always have a matching source code change.
