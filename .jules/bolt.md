@@ -140,3 +140,7 @@
 ## 2024-05-24 - Do Not Bust React.memo with Inline Arrow Functions in Props
 **Learning:** Wrapping a large or heavy component (like `ProjectForm`) in `React.memo` is ineffective if its parent component passes inline arrow functions (e.g., `onSubmit={(data) => setProjectDataForAgents(data)}`) as props. These arrow functions are recreated on every parent render (like when a simple `apiStatus` updates), breaking referential equality and causing the heavy child component to re-render needlessly.
 **Action:** Always verify that all function props passed to a `React.memo` component are stable. Pass stable references like a raw `useState` setter (`onSubmit={setProjectDataForAgents}`) or wrap custom functions in `useCallback`.
+
+## 2024-06-22 - [React.memo Safety with Callbacks]
+**Learning:** When testing React components for stable callback references, list items relying on index tracking in test overrides can lead to false failures if the application code expects an `id`. Attempting to refactor tests to match an implementation's ID expectation needs careful alignment with test mocking mechanisms.
+**Action:** Always inspect the actual callback signature in the component (`onUpdate(agent.id, ...)`) vs what the test expects (`onUpdate(index, ...)`). If the test needs updating to reflect an implementation change, ensure any mock variables reflect the component state structures rather than blindly updating parameters.
