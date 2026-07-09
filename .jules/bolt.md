@@ -156,3 +156,11 @@
 ## 2024-05-18 - Avoid Orphaned Test Modifications
 **Learning:** Modifying a component's mock function signature in a test file (e.g. `onUpdate(id, updaterFn)`) without making corresponding updates to the actual parent component implementing that function (`updateAgent` in `MultiAgentConfigurator.js`) will result in test failures or incorrect test logic.
 **Action:** When making isolated performance optimizations (like wrapping `ProjectForm` in `React.memo`), strictly avoid altering unrelated test files or modifying mock function signatures unless it is a direct consequence of the optimization itself. Ensure test changes always have a matching source code change.
+
+## 2026-06-28 - [Optimize ProjectForm Rendering]
+**Learning:** The  component passes inline arrow functions and state functions as props to the heavy child component . Before this optimization, this prevented  from doing anything if applied, and naturally caused  to re-render constantly (e.g. on  checks or tab switching). Ensuring callbacks are stable via  and passing state setters () directly to children allows  to work effectively on complex layout components.
+**Action:** Wrap top-level stateful handlers (like form submissions) with , pass pure  setters directly rather than through anonymous arrow functions, and wrap heavy presentational child components with  to eliminate unnecessary rendering trees when context/unrelated state in parent changes.
+
+## 2024-05-18 - [Optimize ProjectForm Rendering]
+**Learning:** The App component passes inline arrow functions and state functions as props to the heavy child component ProjectForm. Before this optimization, this prevented React.memo from doing anything if applied, and naturally caused ProjectForm to re-render constantly (e.g. on apiStatus checks or tab switching). Ensuring callbacks are stable via React.useCallback and passing state setters (setProjectDataForAgents) directly to children allows React.memo to work effectively on complex layout components.
+**Action:** Wrap top-level stateful handlers (like form submissions) with React.useCallback, pass pure useState setters directly rather than through anonymous arrow functions, and wrap heavy presentational child components with React.memo() to eliminate unnecessary rendering trees when context/unrelated state in parent changes.
