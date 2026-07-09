@@ -177,3 +177,7 @@
 
 **Learning:** When attempting to optimize performance by wrapping components in `React.memo` (like `ProjectForm`), it is crucial to also stabilize the props passed from parent components (like `App.js`). If a parent passes an inline function (e.g., `onSubmit={(data) => setProjectDataForAgents(data)}`), a new function reference is created on every render, invalidating the child's `React.memo` and causing it to re-render anyway.
 **Action:** When wrapping components in `React.memo`, always verify and stabilize the references of function props passed from parent components using `useCallback` or direct state setter references. Also, take care when updating tests not to conflate unique entity IDs with array indices for update callbacks if the implementation still relies on indices.
+
+## 2024-05-18 - Preserve Child React.memo By Passing Stable Props
+**Learning:** Passing an inline arrow function (like `onSubmit={(data) => setProjectData(data)}`) from a parent (`App.js`) to a child component (`ProjectForm`) causes the child to receive a new function reference on every parent render. This completely defeats `React.memo()` on the child, forcing it to re-render unnecessarily (e.g., when the parent updates non-related state like an initial API health check).
+**Action:** When a child component is wrapped in `React.memo`, ensure all passed props (especially functions) have stable references. Instead of inline arrows, pass the stable `useState` setter directly (e.g., `onSubmit={setProjectData}`) or wrap the callback in `useCallback`.
