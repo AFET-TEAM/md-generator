@@ -88,3 +88,7 @@
 ## 2024-05-18 - Prevent heavy child component re-renders due to parent state updates
 **Learning:** In React applications with heavy form components (like `ProjectForm`), changes in unrelated parent state (such as polling for API status in `App.js`) can cause the entire form to re-render, leading to performance issues and potential state loss during text input.
 **Action:** Use `React.memo` on the child component and ensure all passed callback functions (like `onSubmit`) are stable. Wrap parent handler functions in `useCallback` or pass stable `useState` setter functions directly instead of using inline arrow functions (e.g., use `<Child onSubmit={setState} />` instead of `<Child onSubmit={(data) => setState(data)} />`).
+
+## 2024-05-08 - Prevent Heavy Parent Renders During Component Mode Swaps
+**Learning:** In top-level components (like `App.js`) managing state for forms and configurations (like `MultiAgentConfigurator`), passing an inline callback (e.g. `onSubmit={(data) => setProjectDataForAgents(data)}`) instead of a stable reference to a child component (like `ProjectForm`) defeats the child's `React.memo()`. This causes the child component to re-render completely whenever any parent state changes.
+**Action:** When child components are wrapped in `React.memo` (like `ProjectForm`), verify that their props in the parent component (like `onSubmit` in `App.js`) are stable. Pass state setter functions directly (like `onSubmit={setProjectDataForAgents}`) or use `useCallback` to ensure stability.
