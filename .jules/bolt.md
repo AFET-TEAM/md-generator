@@ -132,3 +132,7 @@
 ## 2023-10-27 - Preventing React.memo invalidation by stabilizing parent callbacks
 **Learning:** Wrapping a component in `React.memo` is only effective if its props are referentially stable. In React, passing inline arrow functions (like `onSubmit={(data) => setState(data)}`) creates a new function reference on every parent render, completely busting the memoization of the child component.
 **Action:** When applying `React.memo` to optimize a child component, carefully audit the parent's render function to ensure all passed function props are stabilized. Prefer passing stable `useState` setter functions directly or wrapping event handlers in `React.useCallback`.
+
+## 2025-05-24 - Do not pass inline functions to Heavy Child Components
+**Learning:** Inline functions or un-memoized callbacks passed to heavy components (like ProjectForm) break the React.memo functionality, causing unnecessary re-renders. This is particularly problematic in App.js where API connectivity checks or mode changes can trigger parent re-renders.
+**Action:** Always ensure function props (like onSubmit) are passed as stable references. Wrap child components in React.memo and use React.useCallback or stable state setters for the callbacks.
