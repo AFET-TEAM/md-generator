@@ -112,3 +112,7 @@
 ## 2024-05-19 - Isolate Form Components from Parent State Updates
 **Learning:** Heavy form components (like `ProjectForm`) can suffer from severe re-render lag if they are forced to re-render when unrelated parent state changes (e.g., periodic API health checks in `App.js` updating `apiStatus`). If the parent passes down inline functions (like `onSubmit={(data) => set(data)}`) or dynamically recreated callbacks, it defeats any standard memoization attempts on the child component.
 **Action:** Wrap heavy UI form components in `React.memo` and ensure all function props (such as `onSubmit`) passed from the parent are stabilized using either direct state setter references or `useCallback` hooks.
+
+## 2024-05-24 - Stabilize Props for Memoized React Components
+**Learning:** Wrapping a component in `React.memo` (like `ProjectForm`) to prevent unnecessary re-renders is completely useless if the parent component (`App.js`) passes inline functions (like `onSubmit={(data) => set(data)}`) or recreated functions (like a non-memoized `handleFormSubmit`) as props. These props change referential equality on every parent render, busting the memoization and causing the heavy child component to re-render anyway.
+**Action:** When applying `React.memo` to a component, strictly examine all instances where it is used and ensure all function props passed to it are perfectly stable. Use `useCallback` for custom handlers, or pass stable `useState` setter functions directly instead of wrapping them in inline arrow functions.
