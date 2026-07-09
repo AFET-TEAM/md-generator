@@ -136,3 +136,7 @@
 ## 2025-05-24 - Do not pass inline functions to Heavy Child Components
 **Learning:** Inline functions or un-memoized callbacks passed to heavy components (like ProjectForm) break the React.memo functionality, causing unnecessary re-renders. This is particularly problematic in App.js where API connectivity checks or mode changes can trigger parent re-renders.
 **Action:** Always ensure function props (like onSubmit) are passed as stable references. Wrap child components in React.memo and use React.useCallback or stable state setters for the callbacks.
+
+## 2024-05-24 - Do Not Bust React.memo with Inline Arrow Functions in Props
+**Learning:** Wrapping a large or heavy component (like `ProjectForm`) in `React.memo` is ineffective if its parent component passes inline arrow functions (e.g., `onSubmit={(data) => setProjectDataForAgents(data)}`) as props. These arrow functions are recreated on every parent render (like when a simple `apiStatus` updates), breaking referential equality and causing the heavy child component to re-render needlessly.
+**Action:** Always verify that all function props passed to a `React.memo` component are stable. Pass stable references like a raw `useState` setter (`onSubmit={setProjectDataForAgents}`) or wrap custom functions in `useCallback`.
