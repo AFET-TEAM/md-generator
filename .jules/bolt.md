@@ -1,3 +1,7 @@
+## 2024-05-18 - Fix stale test comments and argument signatures
+**Learning:** When implementing a refactor across components (like switching from array indices to IDs for list item callbacks), test files often contain stale comments describing the old signature (e.g. `// Signature: onUpdate(index, updatedAgent)`). Even if the component implementation is correct, failing to update these test arguments causes the test suite to fail or the reviewer to incorrectly flag the change as breaking.
+**Action:** Always read the test files associated with the components being refactored, verify their actual required signatures by checking the updated component code, and update any stale documentation comments in the test to avoid confusion.
+
 ## 2025-01-26 - Pre-compute Search Strings to Avoid Repeated String Allocations
 **Learning:** In React list-filtering loops (like in `SkillSelector`), calling `.toLowerCase()` inside the loop on properties of every list item (especially when combining strings like name + description) causes significant overhead via repeated allocations and string operations on every keystroke.
 **Action:** Pre-compute and store these search strings in a module-level dictionary when the static data is loaded. Use this map in the filter loop. This optimization converted `O(N*M)` string allocations during render to `O(1)`.
@@ -80,3 +84,108 @@
 ## 2024-05-18 - [List Callbacks Optimization]
 **Learning:** Using array indices as dependencies in `useCallback` for list items invalidates memoized child components when items are added or removed (e.g., removing index 0 causes index 1 to become 0, recreating its callback and busting `React.memo`).
 **Action:** Always use stable unique identifiers (like `item.id`) instead of indices for list item update and remove callbacks to prevent O(N) recreations of callbacks and subsequent re-renders of expensive nested components.
+
+## 2024-05-18 - Memoize Form Components Using React.memo
+**Learning:** In forms like `ProjectForm.js`, wrapping the component export with `React.memo` prevents unnecessary re-renders when parent states unrelated to the form change. Additionally, passing stable references from the parent using `useCallback` (e.g. `onSubmit={handleFormSubmit}` or `onSubmit={setProjectDataForAgents}`) ensures that the memoization is not defeated, preventing heavy sub-components (like numerous `SelectField`s) from re-rendering and reducing input latency.
+**Action:** Always consider `React.memo` on large form components, and simultaneously ensure parent callbacks are memoized (`useCallback` or passing `useState` setter functions directly which are guaranteed to be stable) so the form doesn't re-render needlessly when sibling components update or tab states switch (if applicable).
+
+## 2024-05-18 - Prevent heavy child component re-renders due to parent state updates
+**Learning:** In React applications with heavy form components (like `ProjectForm`), changes in unrelated parent state (such as polling for API status in `App.js`) can cause the entire form to re-render, leading to performance issues and potential state loss during text input.
+**Action:** Use `React.memo` on the child component and ensure all passed callback functions (like `onSubmit`) are stable. Wrap parent handler functions in `useCallback` or pass stable `useState` setter functions directly instead of using inline arrow functions (e.g., use `<Child onSubmit={setState} />` instead of `<Child onSubmit={(data) => setState(data)} />`).
+
+## 2024-05-08 - Prevent Heavy Parent Renders During Component Mode Swaps
+**Learning:** In top-level components (like `App.js`) managing state for forms and configurations (like `MultiAgentConfigurator`), passing an inline callback (e.g. `onSubmit={(data) => setProjectDataForAgents(data)}`) instead of a stable reference to a child component (like `ProjectForm`) defeats the child's `React.memo()`. This causes the child component to re-render completely whenever any parent state changes.
+**Action:** When child components are wrapped in `React.memo` (like `ProjectForm`), verify that their props in the parent component (like `onSubmit` in `App.js`) are stable. Pass state setter functions directly (like `onSubmit={setProjectDataForAgents}`) or use `useCallback` to ensure stability.
+
+## 2024-05-18 - ProjectForm Parent Component Render Optimization
+**Learning:** In large applications with heavy form components like `ProjectForm` that sit at the root level (`App.js`), passing inline functions (like `onSubmit={(data) => setProjectDataForAgents(data)}`) defeats the memoization of the child component. Any state change in the parent (e.g. `apiStatus` updates, mode toggles) will cause the heavy child component to re-render, leading to lag.
+**Action:** Always wrap heavy root-level forms in `React.memo` and pass stable function references (like direct `setState` functions or `useCallback` wrapped functions) for their props to isolate their rendering lifecycle from parent state updates.
+
+## 2026-06-08 - [Fixing App.js React.memo propagation to ProjectForm]
+**Learning:** The `ProjectForm` component was unnecessarily re-rendering on parent updates (e.g., initial `apiStatus` check or typing into form fields when it was part of a larger render tree). Simply wrapping the component export with `React.memo` is insufficient if the props passed to it are not referentially stable.
+**Action:** Always wrap state setter inline functions or non-primitive props with `useCallback` and `useMemo` respectively. Here, `setProjectDataForAgents` was passed securely, while `handleFormSubmit` needed `useCallback([activeMode])`.
+
+## 2024-05-18 - Stable Callback Props for React.memo Wrapping
+**Learning:** Even when wrapping a heavy component like `ProjectForm` in `React.memo()`, the memoization is easily broken if the parent component (`App.js`) passes inline functions as props (e.g. `onSubmit={(data) => setProjectDataForAgents(data)}`). Unrelated state updates in the parent (such as initial health check setting `apiStatus`) will cause the inline function to be recreated, breaking the referential equality check in `React.memo` and forcing a re-render of the heavy form.
+**Action:** When applying `React.memo()` to a component, strictly examine all call sites rendering that component. Ensure every prop passed down is a stable reference. Replace inline arrow functions that only call state setters with the setter function directly (`onSubmit={setProjectDataForAgents}`) or wrap handlers in `React.useCallback`.
+
+## 2024-05-19 - React.memo Optimization for App-level Forms
+**Learning:** Heavy components like `ProjectForm` can suffer from unnecessary re-renders when unrelated parent state in `App.js` updates (e.g., resolving `apiStatus` or background tasks). Wrapping the form in `React.memo` effectively isolates it.
+**Action:** Always wrap heavy form components in `React.memo` and ensure that the parent passes perfectly stable callback props (using `useCallback` or direct `setState` references).
+
+## 2024-05-19 - Isolate Form Components from Parent State Updates
+**Learning:** Heavy form components (like `ProjectForm`) can suffer from severe re-render lag if they are forced to re-render when unrelated parent state changes (e.g., periodic API health checks in `App.js` updating `apiStatus`). If the parent passes down inline functions (like `onSubmit={(data) => set(data)}`) or dynamically recreated callbacks, it defeats any standard memoization attempts on the child component.
+**Action:** Wrap heavy UI form components in `React.memo` and ensure all function props (such as `onSubmit`) passed from the parent are stabilized using either direct state setter references or `useCallback` hooks.
+
+## 2024-05-24 - Stabilize Props for Memoized React Components
+**Learning:** Wrapping a component in `React.memo` (like `ProjectForm`) to prevent unnecessary re-renders is completely useless if the parent component (`App.js`) passes inline functions (like `onSubmit={(data) => set(data)}`) or recreated functions (like a non-memoized `handleFormSubmit`) as props. These props change referential equality on every parent render, busting the memoization and causing the heavy child component to re-render anyway.
+**Action:** When applying `React.memo` to a component, strictly examine all instances where it is used and ensure all function props passed to it are perfectly stable. Use `useCallback` for custom handlers, or pass stable `useState` setter functions directly instead of wrapping them in inline arrow functions.
+
+## 2024-05-20 - Ensure Stable Callbacks for React.memo in Lists
+**Learning:** In lists of components wrapped with `React.memo()`, passing unstable callbacks directly defeats memoization. When writing tests to verify performance, the callback invocations used to mock interactions must match the updated signature that uses unique IDs, not indices. Otherwise the tests will fail with expectations mismatch or missing calls.
+**Action:** Always verify the callback signature matches between the child component and its parent list component, especially when using stable IDs vs array indices.
+
+## 2026-06-15 - Testing Component Signature Strictness in Mocked Components
+**Learning:** When mocking a React component (like `AgentCard`) in a parent component's test (like `MultiAgentConfigurator.test.js`) to assert callback stability, using test actions (`act`) that interact with mocked callback properties MUST perfectly mirror the child component's prop signatures. For example, if a child component's `onUpdate` uses `id` (e.g. `onUpdate(agent.id, ...)`), the mocked test simulating that call must use the `id`, not an arbitrary `index` like `onUpdate(0, ...)`, or assertions checking object shape/references will fail due to unexpected arguments flowing back to the parent state updater.
+**Action:** When updating a React component's prop signatures for performance (e.g., using `id` instead of `index`), ensure all corresponding mock interactions in performance tests are updated to match the new signature to prevent test failures.
+
+## 2026-05-18 - [Child Component Memoization Optimization]
+**Learning:** Using inline arrow functions in parent components (e.g., `onSubmit={(data) => set(data)}`) defeats the memoization of child components (like `ProjectForm`) wrapped in `React.memo`, leading to unnecessary re-renders of the entire form when the parent state changes (e.g., during API health checks or tab switching).
+**Action:** Always pass stable references to child components. Use `React.useCallback` or pass the stable state setter function directly (e.g., `onSubmit={set}`). Also ensure the child component export is correctly wrapped in `React.memo` (e.g., `export default React.memo(ProjectForm)`).
+
+## 2023-10-27 - Preventing React.memo invalidation by stabilizing parent callbacks
+**Learning:** Wrapping a component in `React.memo` is only effective if its props are referentially stable. In React, passing inline arrow functions (like `onSubmit={(data) => setState(data)}`) creates a new function reference on every parent render, completely busting the memoization of the child component.
+**Action:** When applying `React.memo` to optimize a child component, carefully audit the parent's render function to ensure all passed function props are stabilized. Prefer passing stable `useState` setter functions directly or wrapping event handlers in `React.useCallback`.
+
+## 2025-05-24 - Do not pass inline functions to Heavy Child Components
+**Learning:** Inline functions or un-memoized callbacks passed to heavy components (like ProjectForm) break the React.memo functionality, causing unnecessary re-renders. This is particularly problematic in App.js where API connectivity checks or mode changes can trigger parent re-renders.
+**Action:** Always ensure function props (like onSubmit) are passed as stable references. Wrap child components in React.memo and use React.useCallback or stable state setters for the callbacks.
+
+## 2024-05-24 - Do Not Bust React.memo with Inline Arrow Functions in Props
+**Learning:** Wrapping a large or heavy component (like `ProjectForm`) in `React.memo` is ineffective if its parent component passes inline arrow functions (e.g., `onSubmit={(data) => setProjectDataForAgents(data)}`) as props. These arrow functions are recreated on every parent render (like when a simple `apiStatus` updates), breaking referential equality and causing the heavy child component to re-render needlessly.
+**Action:** Always verify that all function props passed to a `React.memo` component are stable. Pass stable references like a raw `useState` setter (`onSubmit={setProjectDataForAgents}`) or wrap custom functions in `useCallback`.
+
+## 2024-06-22 - [React.memo Safety with Callbacks]
+**Learning:** When testing React components for stable callback references, list items relying on index tracking in test overrides can lead to false failures if the application code expects an `id`. Attempting to refactor tests to match an implementation's ID expectation needs careful alignment with test mocking mechanisms.
+**Action:** Always inspect the actual callback signature in the component (`onUpdate(agent.id, ...)`) vs what the test expects (`onUpdate(index, ...)`). If the test needs updating to reflect an implementation change, ensure any mock variables reflect the component state structures rather than blindly updating parameters.
+
+## 2024-06-25 - React.memo Component Bailouts
+**Learning:** In React, passing dynamically generated inline functions (like arrow functions in props) or using unmemoized callbacks directly invalidates `React.memo` wrappers on heavy child components. For example, `ProjectForm` was re-rendering unnecessarily because `handleFormSubmit` and `onSubmit={(data) => setProjectDataForAgents(data)}` were re-creating function references on every render of `App.js`.
+**Action:** Always verify that function props passed to `React.memo` components have stable references by using `useCallback` or passing `setState` variables directly, and verify by writing test assertions or inspecting React Developer Tools.
+
+## 2025-01-20 - Memoizing Form Components and Passing Stable Callbacks
+**Learning:** In React applications, heavy form components (like `ProjectForm`) can re-render unnecessarily when the parent component (`App.js`) re-renders due to unrelated state changes (e.g., initial API health checks storing results in `apiStatus`).
+**Action:** Wrap the heavy form component in `React.memo()` and ensure that any callbacks passed as props (like `onSubmit`) are either wrapped in `React.useCallback()` with the correct dependencies or are stable state setters directly passed down (e.g., passing `setProjectData` instead of `(data) => setProjectData(data)`). This prevents cascading re-renders and improves perceived UI latency.
+
+## 2024-05-18 - Avoid Orphaned Test Modifications
+**Learning:** Modifying a component's mock function signature in a test file (e.g. `onUpdate(id, updaterFn)`) without making corresponding updates to the actual parent component implementing that function (`updateAgent` in `MultiAgentConfigurator.js`) will result in test failures or incorrect test logic.
+**Action:** When making isolated performance optimizations (like wrapping `ProjectForm` in `React.memo`), strictly avoid altering unrelated test files or modifying mock function signatures unless it is a direct consequence of the optimization itself. Ensure test changes always have a matching source code change.
+
+## 2026-06-28 - [Optimize ProjectForm Rendering]
+**Learning:** The  component passes inline arrow functions and state functions as props to the heavy child component . Before this optimization, this prevented  from doing anything if applied, and naturally caused  to re-render constantly (e.g. on  checks or tab switching). Ensuring callbacks are stable via  and passing state setters () directly to children allows  to work effectively on complex layout components.
+**Action:** Wrap top-level stateful handlers (like form submissions) with , pass pure  setters directly rather than through anonymous arrow functions, and wrap heavy presentational child components with  to eliminate unnecessary rendering trees when context/unrelated state in parent changes.
+
+## 2024-05-18 - [Optimize ProjectForm Rendering]
+**Learning:** The App component passes inline arrow functions and state functions as props to the heavy child component ProjectForm. Before this optimization, this prevented React.memo from doing anything if applied, and naturally caused ProjectForm to re-render constantly (e.g. on apiStatus checks or tab switching). Ensuring callbacks are stable via React.useCallback and passing state setters (setProjectDataForAgents) directly to children allows React.memo to work effectively on complex layout components.
+**Action:** Wrap top-level stateful handlers (like form submissions) with React.useCallback, pass pure useState setters directly rather than through anonymous arrow functions, and wrap heavy presentational child components with React.memo() to eliminate unnecessary rendering trees when context/unrelated state in parent changes.
+
+## 2024-07-02 - Testing `React.memo` Wrapped Components
+**Learning:** When attempting to test `React.memo` components passing mock components with interaction to test stability of callbacks, ensure the test correctly implements the component's signature. In `MultiAgentConfigurator.test.js`, passing the index instead of the `id` when simulating an `onUpdate` broke the test since the parent state updates were expecting an `id` to find and update the agent array.
+**Action:** When creating tests or making optimizations interacting with mock objects, ensure the exact property/argument matches what the tested functionality expects, e.g. ID instead of index.
+
+## 2024-07-02 - Stabilizing Callbacks for React.memo
+
+**Learning:** When attempting to optimize performance by wrapping components in `React.memo` (like `ProjectForm`), it is crucial to also stabilize the props passed from parent components (like `App.js`). If a parent passes an inline function (e.g., `onSubmit={(data) => setProjectDataForAgents(data)}`), a new function reference is created on every render, invalidating the child's `React.memo` and causing it to re-render anyway.
+**Action:** When wrapping components in `React.memo`, always verify and stabilize the references of function props passed from parent components using `useCallback` or direct state setter references. Also, take care when updating tests not to conflate unique entity IDs with array indices for update callbacks if the implementation still relies on indices.
+
+## 2024-05-18 - Preserve Child React.memo By Passing Stable Props
+**Learning:** Passing an inline arrow function (like `onSubmit={(data) => setProjectData(data)}`) from a parent (`App.js`) to a child component (`ProjectForm`) causes the child to receive a new function reference on every parent render. This completely defeats `React.memo()` on the child, forcing it to re-render unnecessarily (e.g., when the parent updates non-related state like an initial API health check).
+**Action:** When a child component is wrapped in `React.memo`, ensure all passed props (especially functions) have stable references. Instead of inline arrows, pass the stable `useState` setter directly (e.g., `onSubmit={setProjectData}`) or wrap the callback in `useCallback`.
+
+## 2024-05-18 - Prevent React.memo Busting from Inline Callbacks in App State Updates
+**Learning:** Heavy components (like `ProjectForm`) can become serious performance bottlenecks if they are forced to re-render on unrelated state changes in the parent component (e.g., `App.js` performing initial API health checks or updating connectivity status). Even if child components of `ProjectForm` are memoized, React still allocates all intermediate virtual DOM nodes.
+**Action:** Ensure heavy top-level form components are wrapped in `React.memo` and that all callback props passed from parent orchestrators (like `handleFormSubmit`) are wrapped in `useCallback` or pass stable state setters directly (e.g., `onSubmit={setProjectDataForAgents}`) instead of using inline arrow functions.
+
+## 2024-05-18 - Stabilize Form Callbacks for Memoized Child Components
+**Learning:** React components containing heavy static initializers or dynamic options mapping (like `ProjectForm.js` initializing API caches or mapping select options) cause significant UI lag if they re-render on unrelated state changes (like periodic polling in `App.js` changing `apiStatus`).
+**Action:** Wrap the form component in `React.memo` (at the export level). To make this effective, ensure that any functions passed to it from the parent, such as `onSubmit`, are stabilized. This includes using `useCallback` for parent functions (like `handleFormSubmit`) and avoiding inline arrow functions (e.g., using `onSubmit={setProjectDataForAgents}` instead of `onSubmit={(data) => setProjectDataForAgents(data)}`).
